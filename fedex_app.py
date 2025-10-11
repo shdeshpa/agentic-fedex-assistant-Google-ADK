@@ -1,10 +1,10 @@
 # =============================================================================
 #  Filename: fedex_app.py
 #
-#  Short Description: Unified FedEx shipping application with Streamlit UI
+#  Short Description: Unified FedEx shipping application with beautiful Streamlit UI
 #
 #  Creation date: 2025-10-10
-#  Author: Asif Qamar
+#  Author: Shrinivas Deshpande
 # =============================================================================
 
 """
@@ -20,16 +20,19 @@ Features:
 - Chain-of-thought reflection
 - Supervisor escalation
 - Performance tracking
+- Beautiful modern UI with calendar widget
 """
 
 import streamlit as st
 import pandas as pd
 import time
+from datetime import datetime, date
 from typing import Dict, Any
 from loguru import logger
 
 from agents.unified_agent import UnifiedFedExAgent
 from agents.state import create_initial_state
+from Vanna.config import VannaConfig
 
 
 def initialize_session_state():
@@ -202,41 +205,174 @@ def process_user_query(user_input: str, agent: UnifiedFedExAgent) -> Dict[str, A
 
 
 def main():
-    """Main Streamlit application."""
+    """Main Streamlit application with beautiful modern UI."""
     st.set_page_config(
         page_title="FedEx Shipping Assistant",
         page_icon="📦",
-        layout="wide"
+        layout="wide",
+        initial_sidebar_state="expanded"
     )
     
-    # Custom CSS
+    # Enhanced Custom CSS for beautiful UI
     st.markdown("""
     <style>
+    /* Main background gradient */
+    .stApp {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* Chat container styling */
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Header styling */
+    h1 {
+        color: #4B0082;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Subtitle styling */
+    .subtitle {
+        text-align: center;
+        color: #666;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Chain of thought box */
     .chain-of-thought-box {
-        background-color: #f0f8ff;
-        padding: 15px;
-        border-left: 4px solid #4CAF50;
+        background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+        padding: 20px;
+        border-left: 5px solid #4CAF50;
         margin-bottom: 15px;
-        border-radius: 5px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
+    
+    /* Reflection box */
     .reflection-box {
-        background-color: #f9f9f9;
-        padding: 15px;
-        border-left: 4px solid #2196F3;
-        border-radius: 5px;
+        background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
+        padding: 20px;
+        border-left: 5px solid #2196F3;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
+    
+    /* Supervisor message */
     .supervisor-message {
-        background-color: #fff3e0;
-        padding: 15px;
-        border-left: 4px solid #FF9800;
-        border-radius: 5px;
+        background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        padding: 20px;
+        border-left: 5px solid #FF9800;
+        border-radius: 10px;
         margin-top: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Metric cards */
+    .stMetric {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Calendar widget */
+    .calendar-widget {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        margin-bottom: 20px;
+    }
+    
+    .calendar-date {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 10px 0;
+    }
+    
+    .calendar-day {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    /* Author info */
+    .author-info {
+        text-align: center;
+        color: #666;
+        font-size: 0.9rem;
+        padding: 10px;
+        margin-top: 20px;
+        border-top: 1px solid #e0e0e0;
+    }
+    
+    /* Chat input enhancement */
+    .stChatInput {
+        border-radius: 25px;
+        border: 2px solid #667eea;
     }
     </style>
     """, unsafe_allow_html=True)
     
+    # Sidebar with Calendar Widget
+    with st.sidebar:
+        # Calendar Widget
+        today = datetime.now()
+        st.markdown(f"""
+        <div class="calendar-widget">
+            <div class="calendar-day">{today.strftime('%A')}</div>
+            <div class="calendar-date">{today.strftime('%d')}</div>
+            <div class="calendar-day">{today.strftime('%B %Y')}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("### 📋 Quick Info")
+        st.info("**Available Zones**: 2-8\n\n**Weight Range**: 1-150 lbs\n\n**Services**: 6 FedEx options")
+        
+        st.markdown("### 🎯 Example Queries")
+        st.markdown("""
+        - "Send 10 lbs to Denver"
+        - "Cheapest for zone 5, 20 lbs"
+        - "Overnight to New York"
+        - "What are weight categories?"
+        """)
+        
+        st.markdown("### ⚙️ System Status")
+        try:
+            config = VannaConfig()
+            provider = config.llm_provider.upper()
+            model = config.model
+            st.success(f"✅ {provider} Active")
+            st.caption(f"Model: {model}")
+        except:
+            st.warning("⚠️ Config not loaded")
+        
+        # Author info in sidebar
+        st.markdown("---")
+        st.markdown("""
+        <div style="text-align: center; color: #666;">
+            <small>
+            💻 <strong>Developed by</strong><br/>
+            Shrinivas Deshpande<br/>
+            <em>AI-Powered Shipping Solutions</em>
+            </small>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Main content area
     st.title("📦 FedEx Shipping Assistant")
-    st.markdown("Ask me about shipping rates, delivery times, and service options!")
+    st.markdown('<p class="subtitle">🤖 AI-Powered Rate Lookup with Intelligent Zone Mapping</p>', 
+                unsafe_allow_html=True)
     
     # Initialize session state
     initialize_session_state()
@@ -363,6 +499,17 @@ def main():
             "total_time": result.get('total_time', 0)
         }
         st.session_state.messages.append(msg_data)
+    
+    # Beautiful footer with author info
+    st.markdown("---")
+    st.markdown("""
+    <div class="author-info">
+        💻 <strong>Developed by Shrinivas Deshpande</strong> | 
+        🤖 AI-Powered Shipping Solutions | 
+        📅 {date} |
+        🔗 <a href="https://github.com/shdeshpa/Fedex_shipping_assistant" target="_blank">GitHub</a>
+    </div>
+    """.format(date=datetime.now().strftime('%B %Y')), unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
