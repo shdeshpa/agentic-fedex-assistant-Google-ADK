@@ -59,81 +59,41 @@ def initialize_agent() -> UnifiedFedExAgent:
 def render_sidebar():
     """Render clean sidebar with calendar and minimal info."""
     with st.sidebar:
-        # Compact header
+        # Professional header with golden theme
         st.markdown("""
-        <div style='text-align: center; padding: 10px 0 15px 0;'>
-            <div style='color: #4B0082; font-size: 28px; margin: 0;'>📦</div>
-            <div style='color: #4B0082; margin: 5px 0; font-size: 20px; font-weight: bold;'>FedEx Assistant</div>
-            <div style='color: #cccccc; font-size: 12px; margin: 0;'>AI-Powered Shipping</div>
+        <div style='text-align: center; padding: 15px 0 20px 0; background: linear-gradient(135deg, #4B0082 0%, #8A2BE2 50%, #9370DB 100%); 
+                    border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);'>
+            <div style='color: #FFD700; font-size: 32px; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>🚀</div>
+            <div style='color: #FFD700; margin: 8px 0; font-size: 22px; font-weight: 800; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);'>FedEx Assistant</div>
+            <div style='color: rgba(255,215,0,0.9); font-size: 14px; margin: 0; font-weight: 600;'>AI-Powered Shipping</div>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("---")
         
-        # Full Calendar Widget with Purple Gradient and Golden Text
-        st.markdown("### 📅 Calendar")
+        # Simple Today's Date Display
+        st.markdown("### 📅 Today's Date")
         current_date = datetime.now()
         
-        # Create full calendar with all days
-        import calendar
-        
-        # Current month calendar
-        month_cal = calendar.monthcalendar(current_date.year, current_date.month)
-        month_name = current_date.strftime("%B %Y")
-        
-        # Calendar with purple gradient background and golden text
-        calendar_html = f"""
+        # Today's date with purple gradient and golden text
+        st.markdown(f"""
         <div style='background: linear-gradient(135deg, #4B0082 0%, #8A2BE2 50%, #9370DB 100%);
-                    padding: 20px; border-radius: 15px; margin: 15px 0;
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.3);'>
+                    padding: 25px; border-radius: 15px; margin: 15px 0;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.3); text-align: center;'>
             
-            <div style='text-align: center; margin-bottom: 20px;'>
-                <h3 style='color: #FFD700; margin: 0; font-size: 18px; font-weight: bold;'>
-                    {month_name}
-                </h3>
+            <div style='color: #FFD700; font-size: 36px; font-weight: 800; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>
+                {current_date.strftime("%d")}
             </div>
             
-            <div style='display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;'>
-        """
-        
-        # Day headers
-        day_headers = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-        for day in day_headers:
-            calendar_html += f"""
-                <div style='background: rgba(255,215,0,0.2); padding: 8px; text-align: center; 
-                            border-radius: 5px; color: #FFD700; font-weight: bold; font-size: 12px;'>
-                    {day}
-                </div>
-            """
-        
-        # Calendar days
-        for week in month_cal:
-            for day in week:
-                if day == 0:
-                    calendar_html += """
-                        <div style='padding: 8px; text-align: center;'></div>
-                    """
-                elif day == current_date.day:
-                    calendar_html += f"""
-                        <div style='background: #FFD700; color: #4B0082; padding: 8px; text-align: center; 
-                                    border-radius: 5px; font-weight: bold; font-size: 14px;'>
-                            {day}
-                        </div>
-                    """
-                else:
-                    calendar_html += f"""
-                        <div style='background: rgba(255,255,255,0.1); color: #FFD700; padding: 8px; 
-                                    text-align: center; border-radius: 5px; font-size: 14px;'>
-                            {day}
-                        </div>
-                    """
-        
-        calendar_html += """
+            <div style='color: rgba(255,215,0,0.9); font-size: 18px; font-weight: 600; margin: 8px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);'>
+                {current_date.strftime("%B %Y")}
+            </div>
+            
+            <div style='color: rgba(255,215,0,0.8); font-size: 16px; font-weight: 500; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);'>
+                {current_date.strftime("%A")}
             </div>
         </div>
-        """
-        
-        st.markdown(calendar_html, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
         
         st.markdown("---")
         
@@ -146,13 +106,14 @@ def render_sidebar():
         
         st.markdown("---")
         
-        # Author Info - Compact
+        # Author Info - Golden Theme
         st.markdown("""
-        <div style='text-align: center; padding: 10px 0; color: #666;'>
-            <div style='color: #4B0082; font-weight: bold; font-size: 12px; margin: 0;'>
+        <div style='text-align: center; padding: 15px 0; background: linear-gradient(135deg, #4B0082 0%, #8A2BE2 50%, #9370DB 100%); 
+                    border-radius: 10px; margin-top: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);'>
+            <div style='color: #FFD700; font-weight: 800; font-size: 14px; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);'>
                 Shrinivas Deshpande
             </div>
-            <div style='color: #888; font-size: 10px; margin: 2px 0 0 0;'>
+            <div style='color: rgba(255,215,0,0.8); font-size: 11px; margin: 5px 0 0 0; font-weight: 600;'>
                 © 2025
             </div>
         </div>
@@ -165,7 +126,7 @@ def render_chat_message(msg: Dict[str, Any]):
         # Main message content
         st.markdown(msg["content"])
         
-        # Professional shipping details
+        # Professional shipping details with improved rendering
         if "recommendation" in msg and msg["recommendation"]:
             rec = msg["recommendation"]
             if rec.get('service') != 'N/A' and rec.get('service') != 'Information':
@@ -178,13 +139,13 @@ def render_chat_message(msg: Dict[str, Any]):
                             box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 2px solid #FFD700;'>
                     
                     <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;'>
-                        <div>
+                        <div style='flex: 1;'>
                             <div style='color: rgba(255,215,0,0.8); font-size: 14px; margin-bottom: 5px; font-weight: bold;'>SERVICE</div>
-                            <div style='color: #FFD700; font-size: 20px; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);'>
+                            <div style='color: #FFD700; font-size: 20px; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); word-break: break-word;'>
                                 {rec.get('service', 'N/A').replace('_', ' ')}
                             </div>
                         </div>
-                        <div style='text-align: right;'>
+                        <div style='text-align: right; flex: 1;'>
                             <div style='color: rgba(255,215,0,0.8); font-size: 14px; margin-bottom: 5px; font-weight: bold;'>TOTAL COST</div>
                             <div style='color: #FFD700; font-size: 32px; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.7);'>
                                 ${rec.get('estimated_cost', 0):.2f}
@@ -193,15 +154,15 @@ def render_chat_message(msg: Dict[str, Any]):
                     </div>
                     
                     <div style='display: flex; justify-content: space-between; margin-top: 15px;'>
-                        <div>
+                        <div style='flex: 1;'>
                             <div style='color: rgba(255,215,0,0.7); font-size: 12px; margin-bottom: 3px; font-weight: bold;'>DELIVERY TIME</div>
-                            <div style='color: #FFD700; font-size: 14px; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);'>
+                            <div style='color: #FFD700; font-size: 14px; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); word-break: break-word;'>
                                 {rec.get('delivery_time', 'N/A')}
                             </div>
                         </div>
-                        <div style='text-align: right;'>
+                        <div style='text-align: right; flex: 1;'>
                             <div style='color: rgba(255,215,0,0.7); font-size: 12px; margin-bottom: 3px; font-weight: bold;'>DELIVERY DATE</div>
-                            <div style='color: #FFD700; font-size: 14px; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);'>
+                            <div style='color: #FFD700; font-size: 14px; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); word-break: break-word;'>
                                 {rec.get('delivery_date', 'N/A')}
                             </div>
                         </div>
@@ -686,13 +647,13 @@ def main():
                             box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 2px solid #FFD700;'>
                     
                     <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;'>
-                        <div>
+                        <div style='flex: 1;'>
                             <div style='color: rgba(255,215,0,0.8); font-size: 14px; margin-bottom: 5px; font-weight: bold;'>SERVICE</div>
-                            <div style='color: #FFD700; font-size: 20px; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);'>
+                            <div style='color: #FFD700; font-size: 20px; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); word-break: break-word;'>
                                 {rec.get('service', 'N/A').replace('_', ' ')}
                             </div>
                         </div>
-                        <div style='text-align: right;'>
+                        <div style='text-align: right; flex: 1;'>
                             <div style='color: rgba(255,215,0,0.8); font-size: 14px; margin-bottom: 5px; font-weight: bold;'>TOTAL COST</div>
                             <div style='color: #FFD700; font-size: 32px; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.7);'>
                                 ${rec.get('estimated_cost', 0):.2f}
@@ -701,15 +662,15 @@ def main():
                     </div>
                     
                     <div style='display: flex; justify-content: space-between; margin-top: 15px;'>
-                        <div>
+                        <div style='flex: 1;'>
                             <div style='color: rgba(255,215,0,0.7); font-size: 12px; margin-bottom: 3px; font-weight: bold;'>DELIVERY TIME</div>
-                            <div style='color: #FFD700; font-size: 14px; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);'>
+                            <div style='color: #FFD700; font-size: 14px; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); word-break: break-word;'>
                                 {rec.get('delivery_time', 'N/A')}
                             </div>
                         </div>
-                        <div style='text-align: right;'>
+                        <div style='text-align: right; flex: 1;'>
                             <div style='color: rgba(255,215,0,0.7); font-size: 12px; margin-bottom: 3px; font-weight: bold;'>DELIVERY DATE</div>
-                            <div style='color: #FFD700; font-size: 14px; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);'>
+                            <div style='color: #FFD700; font-size: 14px; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); word-break: break-word;'>
                                 {rec.get('delivery_date', 'N/A')}
                             </div>
                         </div>
