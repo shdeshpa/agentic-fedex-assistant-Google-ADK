@@ -59,13 +59,12 @@ def initialize_agent() -> UnifiedFedExAgent:
 def render_sidebar():
     """Render clean sidebar with calendar and minimal info."""
     with st.sidebar:
-        # Simple header
+        # Simple header without borders
         st.markdown("""
-        <div style='text-align: center; padding: 15px 0; margin-bottom: 15px; 
-                    border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;'>
-            <div style='color: #333; font-size: 28px; margin: 0;'>🚀</div>
-            <div style='color: #333; margin: 5px 0; font-size: 20px; font-weight: bold;'>FedEx Assistant</div>
-            <div style='color: #666; font-size: 14px; margin: 0;'>AI-Powered Shipping</div>
+        <div style='text-align: center; padding: 10px 0; margin-bottom: 10px;'>
+            <div style='color: #333; font-size: 24px; margin: 0;'>🚀</div>
+            <div style='color: #333; margin: 3px 0; font-size: 18px; font-weight: bold;'>FedEx Assistant</div>
+            <div style='color: #666; font-size: 12px; margin: 0;'>AI-Powered Shipping</div>
         </div>
         """, unsafe_allow_html=True)
         
@@ -75,20 +74,19 @@ def render_sidebar():
         st.markdown("### 📅 Today's Date")
         current_date = datetime.now()
         
-        # Simple, clean date display
+        # Simple, clean date display without borders
         st.markdown(f"""
-        <div style='padding: 15px; margin: 10px 0; text-align: center; 
-                    border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;'>
+        <div style='padding: 10px; margin: 8px 0; text-align: center;'>
             
-            <div style='color: #333; font-size: 28px; font-weight: bold; margin: 0;'>
+            <div style='color: #333; font-size: 24px; font-weight: bold; margin: 0;'>
                 {current_date.strftime("%d")}
             </div>
             
-            <div style='color: #666; font-size: 16px; font-weight: 500; margin: 5px 0;'>
+            <div style='color: #666; font-size: 14px; font-weight: 500; margin: 3px 0;'>
                 {current_date.strftime("%B %Y")}
             </div>
             
-            <div style='color: #888; font-size: 14px; margin: 0;'>
+            <div style='color: #888; font-size: 12px; margin: 0;'>
                 {current_date.strftime("%A")}
             </div>
         </div>
@@ -105,14 +103,13 @@ def render_sidebar():
         
         st.markdown("---")
         
-        # Author Info - Simple
+        # Author Info - Simple without borders
         st.markdown("""
-        <div style='text-align: center; padding: 10px 0; margin-top: 15px; 
-                    border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;'>
-            <div style='color: #333; font-weight: bold; font-size: 12px; margin: 0;'>
+        <div style='text-align: center; padding: 8px 0; margin-top: 10px;'>
+            <div style='color: #333; font-weight: bold; font-size: 11px; margin: 0;'>
                 Shrinivas Deshpande
             </div>
-            <div style='color: #666; font-size: 10px; margin: 3px 0 0 0;'>
+            <div style='color: #666; font-size: 9px; margin: 2px 0 0 0;'>
                 © 2025
             </div>
         </div>
@@ -131,21 +128,20 @@ def render_chat_message(msg: Dict[str, Any]):
             if rec.get('service') != 'N/A' and rec.get('service') != 'Information':
                 st.markdown("### 📦 Shipping Recommendation")
                 
-                # Simple, clean shipping recommendation
+                # Clean shipping recommendation without borders
                 st.markdown(f"""
-                <div style='padding: 20px; margin: 15px 0; border: 1px solid #ddd; 
-                            border-radius: 8px; background: #f9f9f9;'>
+                <div style='padding: 15px 0; margin: 10px 0;'>
                     
-                    <div style='display: flex; justify-content: space-between; margin-bottom: 15px;'>
+                    <div style='display: flex; justify-content: space-between; margin-bottom: 10px;'>
                         <div>
-                            <div style='color: #666; font-size: 12px; margin-bottom: 3px; font-weight: bold;'>SERVICE</div>
-                            <div style='color: #333; font-size: 18px; font-weight: 600;'>
+                            <div style='color: #666; font-size: 11px; margin-bottom: 2px; font-weight: bold;'>SERVICE</div>
+                            <div style='color: #333; font-size: 16px; font-weight: 600;'>
                                 {rec.get('service', 'N/A').replace('_', ' ')}
                             </div>
                         </div>
                         <div style='text-align: right;'>
-                            <div style='color: #666; font-size: 12px; margin-bottom: 3px; font-weight: bold;'>TOTAL COST</div>
-                            <div style='color: #2E8B57; font-size: 24px; font-weight: 700;'>
+                            <div style='color: #666; font-size: 11px; margin-bottom: 2px; font-weight: bold;'>TOTAL COST</div>
+                            <div style='color: #2E8B57; font-size: 20px; font-weight: 700;'>
                                 ${rec.get('estimated_cost', 0):.2f}
                             </div>
                         </div>
@@ -153,14 +149,14 @@ def render_chat_message(msg: Dict[str, Any]):
                     
                     <div style='display: flex; justify-content: space-between;'>
                         <div>
-                            <div style='color: #666; font-size: 12px; margin-bottom: 3px; font-weight: bold;'>DELIVERY TIME</div>
-                            <div style='color: #333; font-size: 14px; font-weight: 500;'>
+                            <div style='color: #666; font-size: 11px; margin-bottom: 2px; font-weight: bold;'>DELIVERY TIME</div>
+                            <div style='color: #333; font-size: 13px; font-weight: 500;'>
                                 {rec.get('delivery_time', 'N/A')}
                             </div>
                         </div>
                         <div style='text-align: right;'>
-                            <div style='color: #666; font-size: 12px; margin-bottom: 3px; font-weight: bold;'>DELIVERY DATE</div>
-                            <div style='color: #333; font-size: 14px; font-weight: 500;'>
+                            <div style='color: #666; font-size: 11px; margin-bottom: 2px; font-weight: bold;'>DELIVERY DATE</div>
+                            <div style='color: #333; font-size: 13px; font-weight: 500;'>
                                 {rec.get('delivery_date', 'N/A')}
                             </div>
                         </div>
@@ -638,21 +634,20 @@ def main():
                 
                 st.markdown("### 📦 Shipping Recommendation")
                 
-                # Simple, clean shipping recommendation
+                # Clean shipping recommendation without borders
                 st.markdown(f"""
-                <div style='padding: 20px; margin: 15px 0; border: 1px solid #ddd; 
-                            border-radius: 8px; background: #f9f9f9;'>
+                <div style='padding: 15px 0; margin: 10px 0;'>
                     
-                    <div style='display: flex; justify-content: space-between; margin-bottom: 15px;'>
+                    <div style='display: flex; justify-content: space-between; margin-bottom: 10px;'>
                         <div>
-                            <div style='color: #666; font-size: 12px; margin-bottom: 3px; font-weight: bold;'>SERVICE</div>
-                            <div style='color: #333; font-size: 18px; font-weight: 600;'>
+                            <div style='color: #666; font-size: 11px; margin-bottom: 2px; font-weight: bold;'>SERVICE</div>
+                            <div style='color: #333; font-size: 16px; font-weight: 600;'>
                                 {rec.get('service', 'N/A').replace('_', ' ')}
                             </div>
                         </div>
                         <div style='text-align: right;'>
-                            <div style='color: #666; font-size: 12px; margin-bottom: 3px; font-weight: bold;'>TOTAL COST</div>
-                            <div style='color: #2E8B57; font-size: 24px; font-weight: 700;'>
+                            <div style='color: #666; font-size: 11px; margin-bottom: 2px; font-weight: bold;'>TOTAL COST</div>
+                            <div style='color: #2E8B57; font-size: 20px; font-weight: 700;'>
                                 ${rec.get('estimated_cost', 0):.2f}
                             </div>
                         </div>
@@ -660,14 +655,14 @@ def main():
                     
                     <div style='display: flex; justify-content: space-between;'>
                         <div>
-                            <div style='color: #666; font-size: 12px; margin-bottom: 3px; font-weight: bold;'>DELIVERY TIME</div>
-                            <div style='color: #333; font-size: 14px; font-weight: 500;'>
+                            <div style='color: #666; font-size: 11px; margin-bottom: 2px; font-weight: bold;'>DELIVERY TIME</div>
+                            <div style='color: #333; font-size: 13px; font-weight: 500;'>
                                 {rec.get('delivery_time', 'N/A')}
                             </div>
                         </div>
                         <div style='text-align: right;'>
-                            <div style='color: #666; font-size: 12px; margin-bottom: 3px; font-weight: bold;'>DELIVERY DATE</div>
-                            <div style='color: #333; font-size: 14px; font-weight: 500;'>
+                            <div style='color: #666; font-size: 11px; margin-bottom: 2px; font-weight: bold;'>DELIVERY DATE</div>
+                            <div style='color: #333; font-size: 13px; font-weight: 500;'>
                                 {rec.get('delivery_date', 'N/A')}
                             </div>
                         </div>
@@ -691,39 +686,38 @@ def main():
                                 delivery_weather = result['delivery_weather']['weather_info']
                                 st.markdown("### 🌤️ Weather for Delivery Day")
                                 st.markdown(f"""
-                                <div style='padding: 20px; margin: 15px 0; border: 1px solid #ddd; 
-                                            border-radius: 8px; background: #f9f9f9;'>
+                                <div style='padding: 15px 0; margin: 10px 0;'>
                                     
-                                    <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;'>
+                                    <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;'>
                                         <div>
-                                            <div style='color: #666; font-size: 12px; margin-bottom: 3px; font-weight: bold;'>TEMPERATURE</div>
-                                            <div style='color: #333; font-size: 20px; font-weight: 600;'>
+                                            <div style='color: #666; font-size: 11px; margin-bottom: 2px; font-weight: bold;'>TEMPERATURE</div>
+                                            <div style='color: #333; font-size: 16px; font-weight: 600;'>
                                                 {delivery_weather['current_temp']}°F
                                             </div>
                                         </div>
                                         <div>
-                                            <div style='color: #666; font-size: 12px; margin-bottom: 3px; font-weight: bold;'>CONDITIONS</div>
-                                            <div style='color: #333; font-size: 14px; font-weight: 500;'>
+                                            <div style='color: #666; font-size: 11px; margin-bottom: 2px; font-weight: bold;'>CONDITIONS</div>
+                                            <div style='color: #333; font-size: 13px; font-weight: 500;'>
                                                 {delivery_weather['description']}
                                             </div>
                                         </div>
                                         <div>
-                                            <div style='color: #666; font-size: 12px; margin-bottom: 3px; font-weight: bold;'>HUMIDITY</div>
-                                            <div style='color: #333; font-size: 14px; font-weight: 500;'>
+                                            <div style='color: #666; font-size: 11px; margin-bottom: 2px; font-weight: bold;'>HUMIDITY</div>
+                                            <div style='color: #333; font-size: 13px; font-weight: 500;'>
                                                 {delivery_weather['humidity']}%
                                             </div>
                                         </div>
                                         <div>
-                                            <div style='color: #666; font-size: 12px; margin-bottom: 3px; font-weight: bold;'>WIND SPEED</div>
-                                            <div style='color: #333; font-size: 14px; font-weight: 500;'>
+                                            <div style='color: #666; font-size: 11px; margin-bottom: 2px; font-weight: bold;'>WIND SPEED</div>
+                                            <div style='color: #333; font-size: 13px; font-weight: 500;'>
                                                 {delivery_weather['wind_speed']} mph
                                             </div>
                                         </div>
                                     </div>
                                     
-                                    <div style='background: #e9ecef; padding: 15px; border-radius: 6px; margin-top: 10px; border: 1px solid #ddd;'>
-                                        <div style='color: #666; font-size: 12px; margin-bottom: 5px; font-weight: bold;'>📦 SHIPPING RECOMMENDATION</div>
-                                        <div style='color: #333; font-size: 14px; font-weight: 500;'>
+                                    <div style='background: #f8f9fa; padding: 10px; margin-top: 8px;'>
+                                        <div style='color: #666; font-size: 11px; margin-bottom: 3px; font-weight: bold;'>📦 SHIPPING RECOMMENDATION</div>
+                                        <div style='color: #333; font-size: 13px; font-weight: 500;'>
                                             {delivery_weather['shipping_recommendation']}
                                         </div>
                                     </div>
