@@ -5,7 +5,11 @@ build/
 dist/
 wheels/
 *.egg-info
+
+# Environment variables (NEVER commit API keys!)
 .env
+.env.local
+*.env.secret
 
 # Virtual environments
 .venv/

@@ -17,23 +17,46 @@ settings extracted from the original vanna_ollama_sqlite_fedex.py file.
 import os
 from pathlib import Path
 from typing import Dict, List, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 @dataclass
 class VannaConfig:
-    """Configuration class for Vanna FedEx system."""
+    """Configuration class for Vanna FedEx system with flexible LLM provider support."""
     
     # Database configuration
-    db_path: Path = Path("fedex_rates.db")
+    db_path: Path = field(default_factory=lambda: Path(os.getenv("FEDEX_DB_PATH", "fedex_rates.db")))
+    
+    # =========================================================================
+    # LLM Provider Configuration
+    # =========================================================================
+    llm_provider: str = field(default_factory=lambda: os.getenv("LLM_PROVIDER", "openai"))
+    
+    # OpenAI configuration
+    openai_api_key: str = field(default_factory=lambda: os.getenv("OPENAI_API_KEY", ""))
+    openai_model: str = field(default_factory=lambda: os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
     
     # Ollama configuration
-    model: str = "qwen2.5:3b"
-    ollama_host: str = "http://localhost:11434"
+    ollama_host: str = field(default_factory=lambda: os.getenv("OLLAMA_HOST", "http://localhost:11434"))
+    ollama_sql_model: str = field(default_factory=lambda: os.getenv("OLLAMA_SQL_MODEL", "qwen2.5:7b"))
+    ollama_agent_model: str = field(default_factory=lambda: os.getenv("OLLAMA_AGENT_MODEL", "qwen2.5:3b"))
+    
+    # Backward compatibility property
+    @property
+    def model(self) -> str:
+        """Get the active model based on provider."""
+        if self.llm_provider == "openai":
+            return self.openai_model
+        else:
+            return self.ollama_sql_model
     
     # Qdrant configuration
-    qdrant_host: str = "localhost"
-    qdrant_port: int = 6333
+    qdrant_host: str = field(default_factory=lambda: os.getenv("QDRANT_HOST", "localhost"))
+    qdrant_port: int = field(default_factory=lambda: int(os.getenv("QDRANT_PORT", "6333")))
     qdrant_collection: str = "fedex_rates_collection"
     
     # Model persistence
@@ -48,6 +71,15 @@ class VannaConfig:
     streamlit_port: int = 8501
     streamlit_host: str = "0.0.0.0"
     
+    # Query optimization
+    max_results: int = 100
+    
+    # Model timeout
+    model_timeout: int = field(default_factory=lambda: int(os.getenv("MODEL_TIMEOUT", "120")))
+    
+    # LLM temperature
+    llm_temperature: float = field(default_factory=lambda: float(os.getenv("LLM_TEMPERATURE", "0.1")))
+    
     def __post_init__(self):
         """Post-initialization setup."""
         # Ensure models directory exists
@@ -56,6 +88,13 @@ class VannaConfig:
         # Set default log file if not specified
         if self.log_file is None:
             self.log_file = self.models_dir / "vanna.log"
+        
+        # Validate OpenAI configuration
+        if self.llm_provider == "openai" and not self.openai_api_key:
+            raise ValueError(
+                "OpenAI API key is required when LLM_PROVIDER=openai. "
+                "Please set OPENAI_API_KEY in .env file"
+            )
 
 
 # Comprehensive training examples extracted from original file

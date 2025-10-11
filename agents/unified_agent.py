@@ -28,6 +28,7 @@ from loguru import logger
 
 from langchain_core.messages import HumanMessage
 from langchain_ollama import ChatOllama
+from langchain_openai import ChatOpenAI
 
 from .state import ShippingState
 from .zone_lookup_tool import FedExZoneLookupTool
@@ -52,27 +53,51 @@ class UnifiedFedExAgent:
     Uses multiple tools but presents as a single, coherent agent.
     """
     
-    def __init__(self, model: str = "qwen2.5:7b", temperature: float = 0.1):
+    def __init__(self, model: Optional[str] = None, temperature: Optional[float] = None):
         """
         Initialize the Unified FedEx Agent.
         
         Args:
-            model: Ollama model name to use for LLM operations
-            temperature: LLM temperature for response generation (0-1)
+            model: LLM model name (optional, uses config default)
+            temperature: LLM temperature for response generation (optional, uses config default)
         """
-        self.llm = ChatOllama(model=model, temperature=temperature)
         self.config = VannaConfig()
         
+        # Use config defaults if not provided
+        if model is None:
+            model = self.config.model
+        if temperature is None:
+            temperature = self.config.llm_temperature
+        
+        # Initialize LLM based on provider
+        if self.config.llm_provider == "openai":
+            logger.info(f"🤖 Initializing with OpenAI model: {model}")
+            self.llm = ChatOpenAI(
+                model=model,
+                temperature=temperature,
+                api_key=self.config.openai_api_key
+            )
+            self.llm_provider = "openai"
+        else:  # ollama
+            logger.info(f"🤖 Initializing with Ollama model: {model}")
+            self.llm = ChatOllama(model=model, temperature=temperature)
+            self.llm_provider = "ollama"
+        
         # Initialize tools
-        self.zone_lookup = FedExZoneLookupTool(model=model)
+        tool_model = self.config.openai_model if self.config.llm_provider == "openai" else self.config.ollama_agent_model
+        self.zone_lookup = FedExZoneLookupTool(
+            model=tool_model,
+            llm_provider=self.config.llm_provider,
+            api_key=self.config.openai_api_key if self.config.llm_provider == "openai" else None
+        )
         self.sql_engine = SQLiteEngine(self.config)
         self.text_to_sql = TextToSQLEngine(self.config)
         
         # Initialize the text-to-sql engine
         self.text_to_sql.initialize()
         
-        logger.info(f"🤖 Initializing Unified FedEx Agent with model: {model}")
-        logger.info("✅ All tools initialized")
+        logger.info(f"✅ All tools initialized with {self.config.llm_provider.upper()} provider")
+        logger.info(f"   Model: {model}, Temperature: {temperature}")
     
     def process_request(self, user_question: str) -> Dict[str, Any]:
         """

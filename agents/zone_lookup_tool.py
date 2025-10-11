@@ -18,6 +18,7 @@ from typing import Optional, Tuple, Dict
 import json
 from loguru import logger
 from langchain_ollama import ChatOllama
+from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 
 
@@ -35,15 +36,31 @@ class FedExZoneLookupTool:
     for typo correction.
     """
     
-    def __init__(self, model: str = "qwen2.5:3b"):
+    def __init__(
+        self, 
+        model: str = "gpt-4o-mini",
+        llm_provider: str = "openai",
+        api_key: Optional[str] = None
+    ):
         """
         Initialize the zone lookup tool.
         
         Args:
-            model: Ollama model for typo correction
+            model: LLM model for typo correction
+            llm_provider: "openai" or "ollama"
+            api_key: OpenAI API key (required if llm_provider="openai")
         """
-        self.llm = ChatOllama(model=model, temperature=0)
-        logger.info("🗺️ Initializing FedEx Zone Lookup Tool")
+        if llm_provider == "openai":
+            self.llm = ChatOpenAI(
+                model=model,
+                temperature=0,
+                api_key=api_key
+            )
+        else:  # ollama
+            self.llm = ChatOllama(model=model, temperature=0)
+        
+        self.llm_provider = llm_provider
+        logger.info(f"🗺️ Initializing FedEx Zone Lookup Tool with {llm_provider.upper()}")
         
         # Comprehensive US city to zone mapping
         # Based on FedEx ground shipping zones from major origin points

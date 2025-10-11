@@ -23,6 +23,7 @@ import pandas as pd
 from loguru import logger
 
 from vanna.ollama import Ollama
+from vanna.openai import OpenAI_Chat
 from vanna.qdrant import Qdrant_VectorStore
 
 from .config import VannaConfig, TRAINING_EXAMPLES, DATABASE_DOCUMENTATION
@@ -32,27 +33,43 @@ class VannaQdrantOllama(Qdrant_VectorStore, Ollama):
     """
     Custom Vanna class combining Qdrant vector store with Ollama LLM.
     This provides both embedding storage and local LLM inference.
-    Extracted from original vanna_ollama_sqlite_fedex.py.
     """
     
     def __init__(self, config: VannaConfig):
-        """Initialize with Qdrant and Ollama configurations."""
-        self.config = config
-        
+        """Initialize with Qdrant + Ollama."""
+        vanna_config = {
+            "client": None,  # Will be set later
+            "fastembed_model": "BAAI/bge-small-en-v1.5",
+            "model": config.model,
+            "ollama_host": config.ollama_host,
+        }
+        Qdrant_VectorStore.__init__(self, config=vanna_config)
+        Ollama.__init__(self, config=vanna_config)
+
+
+class VannaQdrantOpenAI(Qdrant_VectorStore, OpenAI_Chat):
+    """
+    Custom Vanna class combining Qdrant vector store with OpenAI LLM.
+    This provides both embedding storage and cloud LLM inference.
+    """
+    
+    def __init__(self, config: VannaConfig):
+        """Initialize with Qdrant + OpenAI."""
         # Initialize Qdrant with configuration
         qdrant_config = {
             "qdrant_location": config.qdrant_host,
             "qdrant_port": config.qdrant_port,
-            "qdrant_collection": config.qdrant_collection
+            "qdrant_collection": config.qdrant_collection,
+            "fastembed_model": "BAAI/bge-small-en-v1.5",
         }
         Qdrant_VectorStore.__init__(self, config=qdrant_config)
         
-        # Initialize Ollama with configuration
-        ollama_config = {
+        # Initialize OpenAI with configuration
+        openai_config = {
             "model": config.model,
-            "ollama_host": config.ollama_host
+            "api_key": config.openai_api_key,
         }
-        Ollama.__init__(self, config=ollama_config)
+        OpenAI_Chat.__init__(self, config=openai_config)
 
 
 class VannaModelManager:
@@ -74,10 +91,11 @@ class VannaModelManager:
             config: VannaConfig instance with all configuration settings
         """
         self.config = config
-        self.vanna: Optional[VannaQdrantOllama] = None
+        self.vanna = None  # Will be VannaQdrantOllama or VannaQdrantOpenAI
         self.db_conn: Optional[sqlite3.Connection] = None
         
-        logger.info(f"Initializing VannaModelManager with model: {config.model}")
+        logger.info(f"Initializing VannaModelManager with provider: {config.llm_provider}")
+        logger.info(f"Model: {config.model}")
         logger.info(f"Using Qdrant at {config.qdrant_host}:{config.qdrant_port}")
     
     def connect_database(self) -> None:
@@ -90,24 +108,34 @@ class VannaModelManager:
             raise
     
     def initialize_vanna(self) -> None:
-        """Initialize Vanna with Qdrant + Ollama backend."""
+        """Initialize Vanna with Qdrant + LLM backend (OpenAI or Ollama)."""
         try:
-            logger.info(f"Connecting to Ollama at {self.config.ollama_host}")
             logger.info(f"Connecting to Qdrant at {self.config.qdrant_host}:{self.config.qdrant_port}")
             
-            # Initialize Vanna with both Qdrant and Ollama
-            self.vanna = VannaQdrantOllama(self.config)
+            # Initialize Vanna based on LLM provider
+            if self.config.llm_provider == "openai":
+                logger.info(f"Connecting to OpenAI with model: {self.config.model}")
+                self.vanna = VannaQdrantOpenAI(self.config)
+                logger.success("✅ Vanna initialized with Qdrant + OpenAI backend")
+            else:  # ollama
+                logger.info(f"Connecting to Ollama at {self.config.ollama_host}")
+                self.vanna = VannaQdrantOllama(self.config)
+                logger.success("✅ Vanna initialized with Qdrant + Ollama backend")
             
             # Connect Vanna to SQLite
             self.vanna.connect_to_sqlite(str(self.config.db_path))
             
-            logger.success("✅ Vanna initialized with Qdrant + Ollama backend")
         except Exception as e:
             logger.error(f"❌ Failed to initialize Vanna: {e}")
             logger.info("\nTroubleshooting:")
-            logger.info("1. Make sure Ollama is running: ollama serve")
-            logger.info("2. Make sure Qdrant is running on port 6333")
-            logger.info(f"3. Check model is available: ollama list")
+            if self.config.llm_provider == "openai":
+                logger.info("1. Make sure OPENAI_API_KEY is set in .env file")
+                logger.info("2. Make sure Qdrant is running on port 6333")
+                logger.info(f"3. Verify API key is valid")
+            else:
+                logger.info("1. Make sure Ollama is running: ollama serve")
+                logger.info("2. Make sure Qdrant is running on port 6333")
+                logger.info(f"3. Check model is available: ollama list")
             raise
     
     def is_model_trained(self) -> bool:
