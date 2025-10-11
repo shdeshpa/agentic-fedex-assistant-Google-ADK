@@ -57,115 +57,71 @@ def initialize_agent() -> UnifiedFedExAgent:
 
 
 def render_sidebar():
-    """Render beautiful sidebar with calendar and info."""
+    """Render clean sidebar with calendar and minimal info."""
     with st.sidebar:
-        # Header with logo placeholder
+        # Compact header
         st.markdown("""
-        <div style='text-align: center; padding: 20px 0;'>
-            <h1 style='color: #4B0082; margin: 0;'>📦</h1>
-            <h2 style='color: #4B0082; margin: 5px 0; font-size: 24px;'>FedEx Assistant</h2>
-            <p style='color: #cccccc; font-size: 14px; margin: 0;'>AI-Powered Shipping</p>
+        <div style='text-align: center; padding: 10px 0 15px 0;'>
+            <div style='color: #4B0082; font-size: 28px; margin: 0;'>📦</div>
+            <div style='color: #4B0082; margin: 5px 0; font-size: 20px; font-weight: bold;'>FedEx Assistant</div>
+            <div style='color: #cccccc; font-size: 12px; margin: 0;'>AI-Powered Shipping</div>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("---")
         
-        # 2-Month Calendar Widget
+        # Simple Calendar Widget
         st.markdown("### 📅 Calendar")
         current_date = datetime.now()
         
-        # Generate 2-month calendar using Streamlit components
-        import calendar
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("**Current Month**")
-            # Current month calendar
-            month_cal = calendar.monthcalendar(current_date.year, current_date.month)
-            
-            # Header
-            header = calendar.weekheader(2)
-            st.markdown(f"**{header}**")
-            
-            # Calendar body
-            for week in month_cal:
-                cols = st.columns(7)
-                for i, day in enumerate(week):
-                    with cols[i]:
-                        if day == 0:
-                            st.write("")
-                        elif day == current_date.day:
-                            st.markdown(f"**{day}**", help="Today")
-                        else:
-                            st.write(str(day))
-        
-        with col2:
-            # Next month
-            next_month = current_date.month + 1 if current_date.month < 12 else 1
-            next_year = current_date.year if current_date.month < 12 else current_date.year + 1
-            
-            st.markdown("**Next Month**")
-            next_month_cal = calendar.monthcalendar(next_year, next_month)
-            
-            # Header
-            st.markdown(f"**{header}**")
-            
-            # Calendar body
-            for week in next_month_cal:
-                cols = st.columns(7)
-                for i, day in enumerate(week):
-                    with cols[i]:
-                        if day == 0:
-                            st.write("")
-                        else:
-                            st.write(str(day))
-        
-        # Today's date info
+        # Today's date prominently displayed
         st.markdown(f"""
-        <div style='margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); 
-                    border-radius: 8px; text-align: center; color: white;'>
-            <strong>Today: {current_date.strftime("%A, %B %d, %Y")}</strong>
+        <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 15px;'>
+            <div style='color: white; font-size: 24px; font-weight: bold; margin: 0;'>
+                {current_date.strftime("%d")}
+            </div>
+            <div style='color: rgba(255,255,255,0.9); font-size: 14px; margin: 5px 0;'>
+                {current_date.strftime("%B %Y")}
+            </div>
+            <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>
+                {current_date.strftime("%A")}
+            </div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Simple next few days
+        import calendar
+        from datetime import timedelta
+        
+        st.markdown("**Next Few Days:**")
+        for i in range(1, 6):  # Show next 5 days
+            next_date = current_date + timedelta(days=i)
+            if next_date.weekday() < 5:  # Skip weekends
+                day_name = next_date.strftime("%a")
+                day_num = next_date.strftime("%d")
+                st.markdown(f"• {day_name} {day_num}")
         
         st.markdown("---")
         
         # Quick Stats
-        st.markdown("### 📊 Quick Stats")
+        st.markdown("### 📊 Status")
         if st.session_state.get('agent'):
             config = st.session_state.agent.config
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("Provider", config.llm_provider.upper(), delta="Active")
-            with col2:
-                st.metric("Queries", len(st.session_state.messages) // 2)
-            
-            st.info(f"🤖 **Model**: {config.model}")
+            st.success(f"🟢 {config.llm_provider.upper()} Active")
+            st.info(f"💬 {len(st.session_state.messages) // 2} Queries")
         
         st.markdown("---")
         
-        # System Info
-        st.markdown("### ⚙️ System Info")
-        st.caption("🗄️ Database: fedex_rates.db")
-        st.caption("🌐 Zones: 2-8")
-        st.caption("⚖️ Weights: 1-150 lbs")
-        st.caption("📦 Services: 6 tiers")
-        st.caption("🌤️ Weather: Available")
-        
-        st.markdown("---")
-        
-        # Author Info - More Prominent
+        # Author Info - Compact
         st.markdown("""
-        <div class='author-info'>
-            <h4 style='color: white; margin: 0 0 5px 0; font-size: 16px;'>👨‍💻 Created by</h4>
-            <p style='color: white; margin: 0; font-weight: bold; font-size: 14px;'>
+        <div style='text-align: center; padding: 10px 0; color: #666;'>
+            <div style='color: #4B0082; font-weight: bold; font-size: 12px; margin: 0;'>
                 Shrinivas Deshpande
-            </p>
-            <p style='color: rgba(255,255,255,0.8); margin: 5px 0 0 0; font-size: 11px;'>
-                © 2025 | AI-Powered FedEx Assistant
-            </p>
+            </div>
+            <div style='color: #888; font-size: 10px; margin: 2px 0 0 0;'>
+                © 2025
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -176,57 +132,49 @@ def render_chat_message(msg: Dict[str, Any]):
         # Main message content
         st.markdown(msg["content"])
         
-        # Recommendation details with modern cards
+        # Professional shipping details
         if "recommendation" in msg and msg["recommendation"]:
             rec = msg["recommendation"]
             if rec.get('service') != 'N/A' and rec.get('service') != 'Information':
-                st.markdown("### 📦 Shipping Details")
+                st.markdown("### 📦 Shipping Recommendation")
                 
-                col1, col2, col3, col4 = st.columns(4)
-                with col1:
-                    st.markdown(f"""
-                    <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                padding: 15px; border-radius: 10px; text-align: center;'>
-                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>SERVICE</div>
-                        <div style='color: white; font-size: 16px; font-weight: bold; margin-top: 5px;'>
-                            {rec.get('service', 'N/A').replace('_', ' ')}
+                # Professional card-style layout
+                st.markdown(f"""
+                <div style='background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+                            padding: 25px; border-radius: 15px; margin: 15px 0;
+                            box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);'>
+                    
+                    <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;'>
+                        <div>
+                            <div style='color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 5px;'>SERVICE</div>
+                            <div style='color: white; font-size: 20px; font-weight: 600;'>
+                                {rec.get('service', 'N/A').replace('_', ' ')}
+                            </div>
+                        </div>
+                        <div style='text-align: right;'>
+                            <div style='color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 5px;'>TOTAL COST</div>
+                            <div style='color: #4ade80; font-size: 28px; font-weight: 700;'>
+                                ${rec.get('estimated_cost', 0):.2f}
+                            </div>
                         </div>
                     </div>
-                    """, unsafe_allow_html=True)
-                
-                with col2:
-                    st.markdown(f"""
-                    <div style='background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-                                padding: 15px; border-radius: 10px; text-align: center;'>
-                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>COST</div>
-                        <div style='color: white; font-size: 20px; font-weight: bold; margin-top: 5px;'>
-                            ${rec.get('estimated_cost', 0):.2f}
+                    
+                    <div style='display: flex; justify-content: space-between; margin-top: 15px;'>
+                        <div>
+                            <div style='color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 3px;'>DELIVERY TIME</div>
+                            <div style='color: white; font-size: 14px; font-weight: 500;'>
+                                {rec.get('delivery_time', 'N/A')}
+                            </div>
+                        </div>
+                        <div style='text-align: right;'>
+                            <div style='color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 3px;'>DELIVERY DATE</div>
+                            <div style='color: white; font-size: 14px; font-weight: 500;'>
+                                {rec.get('delivery_date', 'N/A')}
+                            </div>
                         </div>
                     </div>
-                    """, unsafe_allow_html=True)
-                
-                with col3:
-                    st.markdown(f"""
-                    <div style='background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-                                padding: 15px; border-radius: 10px; text-align: center;'>
-                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>DELIVERY</div>
-                        <div style='color: white; font-size: 14px; font-weight: bold; margin-top: 5px;'>
-                            {rec.get('delivery_time', 'N/A')}
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                with col4:
-                    delivery_date = rec.get('delivery_date', 'N/A')
-                    st.markdown(f"""
-                    <div style='background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
-                                padding: 15px; border-radius: 10px; text-align: center;'>
-                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>DELIVERY DATE</div>
-                        <div style='color: white; font-size: 12px; font-weight: bold; margin-top: 5px;'>
-                            {delivery_date}
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                </div>
+                """, unsafe_allow_html=True)
         
         # Reflection with Chain-of-Thought
         if "reflection" in msg and msg["reflection"]:
@@ -692,59 +640,51 @@ def main():
             # Display response
             st.markdown(result['content'])
             
-            # Display recommendation cards
+            # Display professional shipping recommendation
             if result.get('recommendation') and result['recommendation'].get('service') not in ['N/A', 'Information']:
                 rec = result['recommendation']
                 
-                st.markdown("### 📦 Shipping Details")
-                col1, col2, col3, col4 = st.columns(4)
+                st.markdown("### 📦 Shipping Recommendation")
                 
-                with col1:
-                    st.markdown(f"""
-                    <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                padding: 15px; border-radius: 10px; text-align: center;'>
-                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>SERVICE</div>
-                        <div style='color: white; font-size: 16px; font-weight: bold; margin-top: 5px;'>
-                            {rec.get('service', 'N/A').replace('_', ' ')}
+                # Professional card-style layout
+                st.markdown(f"""
+                <div style='background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+                            padding: 25px; border-radius: 15px; margin: 15px 0;
+                            box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);'>
+                    
+                    <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;'>
+                        <div>
+                            <div style='color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 5px;'>SERVICE</div>
+                            <div style='color: white; font-size: 20px; font-weight: 600;'>
+                                {rec.get('service', 'N/A').replace('_', ' ')}
+                            </div>
+                        </div>
+                        <div style='text-align: right;'>
+                            <div style='color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 5px;'>TOTAL COST</div>
+                            <div style='color: #4ade80; font-size: 28px; font-weight: 700;'>
+                                ${rec.get('estimated_cost', 0):.2f}
+                            </div>
                         </div>
                     </div>
-                    """, unsafe_allow_html=True)
-                
-                with col2:
-                    st.markdown(f"""
-                    <div style='background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-                                padding: 15px; border-radius: 10px; text-align: center;'>
-                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>COST</div>
-                        <div style='color: white; font-size: 20px; font-weight: bold; margin-top: 5px;'>
-                            ${rec.get('estimated_cost', 0):.2f}
+                    
+                    <div style='display: flex; justify-content: space-between; margin-top: 15px;'>
+                        <div>
+                            <div style='color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 3px;'>DELIVERY TIME</div>
+                            <div style='color: white; font-size: 14px; font-weight: 500;'>
+                                {rec.get('delivery_time', 'N/A')}
+                            </div>
+                        </div>
+                        <div style='text-align: right;'>
+                            <div style='color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 3px;'>DELIVERY DATE</div>
+                            <div style='color: white; font-size: 14px; font-weight: 500;'>
+                                {rec.get('delivery_date', 'N/A')}
+                            </div>
                         </div>
                     </div>
-                    """, unsafe_allow_html=True)
+                </div>
+                """, unsafe_allow_html=True)
                 
-                with col3:
-                    st.markdown(f"""
-                    <div style='background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-                                padding: 15px; border-radius: 10px; text-align: center;'>
-                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>DELIVERY</div>
-                        <div style='color: white; font-size: 14px; font-weight: bold; margin-top: 5px;'>
-                            {rec.get('delivery_time', 'N/A')}
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                with col4:
-                    delivery_date = rec.get('delivery_date', 'N/A')
-                    st.markdown(f"""
-                    <div style='background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
-                                padding: 15px; border-radius: 10px; text-align: center;'>
-                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>DELIVERY DATE</div>
-                        <div style='color: white; font-size: 12px; font-weight: bold; margin-top: 5px;'>
-                            {delivery_date}
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                # User confirmation
+                # User confirmation with weather
                 if rec.get('needs_confirmation', False):
                     st.markdown("---")
                     
@@ -755,19 +695,52 @@ def main():
                         if st.button("✅ Yes, proceed", key=f"proceed_{len(st.session_state.messages)}"):
                             st.success("✅ Great choice! Your shipment will be processed.")
                             
-                            # Show delivery date weather if available
+                            # Show delivery date weather prominently
                             if result.get('delivery_weather') and result['delivery_weather'].get('success'):
                                 delivery_weather = result['delivery_weather']['weather_info']
                                 st.markdown("### 🌤️ Weather for Delivery Day")
-                                st.info(f"""
-                                **Delivery Date Weather:**
-                                - Temperature: {delivery_weather['current_temp']}°F
-                                - Conditions: {delivery_weather['description']}
-                                - Humidity: {delivery_weather['humidity']}%
-                                - Wind: {delivery_weather['wind_speed']} mph
-                                
-                                **Shipping Recommendation:** {delivery_weather['shipping_recommendation']}
-                                """)
+                                st.markdown(f"""
+                                <div style='background: linear-gradient(135deg, #0f4c75 0%, #3282b8 100%);
+                                            padding: 20px; border-radius: 12px; margin: 15px 0;
+                                            box-shadow: 0 4px 16px rgba(0,0,0,0.2);'>
+                                    
+                                    <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;'>
+                                        <div>
+                                            <div style='color: rgba(255,255,255,0.8); font-size: 12px; margin-bottom: 3px;'>TEMPERATURE</div>
+                                            <div style='color: white; font-size: 24px; font-weight: 600;'>
+                                                {delivery_weather['current_temp']}°F
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style='color: rgba(255,255,255,0.8); font-size: 12px; margin-bottom: 3px;'>CONDITIONS</div>
+                                            <div style='color: white; font-size: 16px; font-weight: 500;'>
+                                                {delivery_weather['description']}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style='color: rgba(255,255,255,0.8); font-size: 12px; margin-bottom: 3px;'>HUMIDITY</div>
+                                            <div style='color: white; font-size: 16px; font-weight: 500;'>
+                                                {delivery_weather['humidity']}%
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style='color: rgba(255,255,255,0.8); font-size: 12px; margin-bottom: 3px;'>WIND SPEED</div>
+                                            <div style='color: white; font-size: 16px; font-weight: 500;'>
+                                                {delivery_weather['wind_speed']} mph
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style='background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 10px;'>
+                                        <div style='color: rgba(255,255,255,0.9); font-size: 13px; margin-bottom: 5px;'>📦 SHIPPING RECOMMENDATION</div>
+                                        <div style='color: white; font-size: 14px; font-weight: 500;'>
+                                            {delivery_weather['shipping_recommendation']}
+                                        </div>
+                                    </div>
+                                </div>
+                                """, unsafe_allow_html=True)
+                            else:
+                                st.info("🌤️ Weather information not available for delivery date.")
                             
                         if st.button("❌ No, show other options", key=f"decline_{len(st.session_state.messages)}"):
                             st.info("Let me show you alternative shipping options...")

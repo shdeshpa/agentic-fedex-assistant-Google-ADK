@@ -542,7 +542,7 @@ Return ONLY valid JSON with exactly these keys, no additional text:
                 'delivery_date_obj': delivery_info['delivery_date_obj'],
                 'business_days': delivery_info['business_days'],
                 'needs_confirmation': True,
-                'recommendation': f"Best option: {service_name} at ${single_value:.2f}. Delivery: {self._get_delivery_time(service_name)}. This is the most cost-effective option available."
+                'recommendation': f"Best option: {service_name} at ${single_value:.2f}. Delivery: {self._get_delivery_time(service_name)} on {delivery_info['delivery_date']}. This is the most cost-effective option available. Weather information will be provided upon confirmation."
             }
             logger.success(f"✅ Recommendation: {service_name} at ${single_value:.2f}")
         # Handle MIN() query results with multiple columns (Zone, Weight, Cheapest_Rate)
@@ -572,7 +572,7 @@ Return ONLY valid JSON with exactly these keys, no additional text:
                 'delivery_date_obj': delivery_info['delivery_date_obj'],
                 'business_days': delivery_info['business_days'],
                 'needs_confirmation': True,
-                'recommendation': f"Best option: {service_name} at ${cheapest_rate:.2f}. Delivery: {self._get_delivery_time(service_name)}. This is the most cost-effective option available."
+                'recommendation': f"Best option: {service_name} at ${cheapest_rate:.2f}. Delivery: {self._get_delivery_time(service_name)} on {delivery_info['delivery_date']}. This is the most cost-effective option available. Weather information will be provided upon confirmation."
             }
             logger.success(f"✅ Recommendation: {service_name} at ${cheapest_rate:.2f}")
         else:
