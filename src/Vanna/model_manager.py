@@ -26,7 +26,7 @@ from vanna.ollama import Ollama
 from vanna.openai import OpenAI_Chat
 from vanna.qdrant import Qdrant_VectorStore
 
-from .config import VannaConfig, TRAINING_EXAMPLES, DATABASE_DOCUMENTATION
+from src.Vanna.config import VannaConfig, TRAINING_EXAMPLES, DATABASE_DOCUMENTATION
 
 
 class VannaQdrantOllama(Qdrant_VectorStore, Ollama):

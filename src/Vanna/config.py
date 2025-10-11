@@ -4,7 +4,7 @@
 #  Short Description: Configuration and constants for Vanna FedEx system
 #
 #  Creation date: 2025-10-09
-#  Author:  Shrinivas Deshpande
+#  Author: Shrinivas Deshpande
 # =============================================================================
 
 """

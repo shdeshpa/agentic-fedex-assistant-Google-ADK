@@ -4,7 +4,7 @@
 #  Short Description: Agents package initialization
 #
 #  Creation date: 2025-10-10
-#  Author: Asif Qamar
+#  Author: Shrinivas Deshpande
 # =============================================================================
 
 """

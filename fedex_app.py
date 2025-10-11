@@ -1,38 +1,34 @@
 # =============================================================================
 #  Filename: fedex_app.py
 #
-#  Short Description: Unified FedEx shipping application with beautiful Streamlit UI
+#  Short Description: Modern FedEx shipping application with beautiful UI
 #
-#  Creation date: 2025-10-10
+#  Creation date: 2025-10-11
 #  Author: Shrinivas Deshpande
 # =============================================================================
 
 """
-Unified FedEx Shipping Application
+FedEx Shipping Assistant - Modern Streamlit Application
 
-A streamlined shipping rate application using a single unified agent
-with multiple specialized tools for comprehensive shipping recommendations.
+A beautiful, intuitive shipping rate application with AI-powered recommendations.
 
 Features:
-- Single agent architecture (simplified)
-- Zone lookup with typo correction
-- SQL generation and execution
-- Chain-of-thought reflection
-- Supervisor escalation
-- Performance tracking
-- Beautiful modern UI with calendar widget
+- Modern, aesthetic UI design
+- Calendar widget with current date
+- Real-time chat interface
+- Performance metrics
+- Interactive data visualization
 """
 
 import streamlit as st
 import pandas as pd
 import time
-from datetime import datetime, date
+from datetime import datetime
 from typing import Dict, Any
 from loguru import logger
 
-from agents.unified_agent import UnifiedFedExAgent
-from agents.state import create_initial_state
-from Vanna.config import VannaConfig
+from src.agents.unified_agent import UnifiedFedExAgent
+from src.agents.state import create_initial_state
 
 
 def initialize_session_state():
@@ -52,69 +48,175 @@ def initialize_agent() -> UnifiedFedExAgent:
         return agent
     except Exception as e:
         logger.error(f"❌ Agent initialization failed: {e}")
-        st.error(f"Initialization failed: {e}")
+        st.error(f"⚠️ Initialization failed: {e}")
+        st.info("💡 **Troubleshooting:**\n"
+                "1. Check that Qdrant is running on port 6333\n"
+                "2. Verify your API key in .env file\n"
+                "3. Ensure fedex_rates.db exists")
         st.stop()
 
 
+def render_sidebar():
+    """Render beautiful sidebar with calendar and info."""
+    with st.sidebar:
+        # Header with logo placeholder
+        st.markdown("""
+        <div style='text-align: center; padding: 20px 0;'>
+            <h1 style='color: #4B0082; margin: 0;'>📦</h1>
+            <h2 style='color: #4B0082; margin: 5px 0; font-size: 24px;'>FedEx Assistant</h2>
+            <p style='color: #666; font-size: 14px; margin: 0;'>AI-Powered Shipping</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Calendar Widget
+        st.markdown("### 📅 Today's Date")
+        current_date = datetime.now()
+        
+        # Create a nice date display
+        st.markdown(f"""
+        <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    padding: 20px; border-radius: 15px; text-align: center;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
+            <div style='color: white; font-size: 48px; font-weight: bold; margin: 0;'>
+                {current_date.strftime("%d")}
+            </div>
+            <div style='color: rgba(255,255,255,0.9); font-size: 18px; margin: 5px 0;'>
+                {current_date.strftime("%B %Y")}
+            </div>
+            <div style='color: rgba(255,255,255,0.8); font-size: 14px;'>
+                {current_date.strftime("%A")}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Quick Stats
+        st.markdown("### 📊 Quick Stats")
+        if st.session_state.get('agent'):
+            config = st.session_state.agent.config
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Provider", config.llm_provider.upper(), delta="Active")
+            with col2:
+                st.metric("Queries", len(st.session_state.messages) // 2)
+            
+            st.info(f"🤖 **Model**: {config.model}")
+        
+        st.markdown("---")
+        
+        # System Info
+        st.markdown("### ⚙️ System Info")
+        st.caption("🗄️ Database: fedex_rates.db")
+        st.caption("🌐 Zones: 2-8")
+        st.caption("⚖️ Weights: 1-150 lbs")
+        st.caption("📦 Services: 6 tiers")
+        
+        st.markdown("---")
+        
+        # Author Info
+        st.markdown("""
+        <div style='text-align: center; padding: 10px 0; color: #666;'>
+            <p style='margin: 5px 0; font-size: 12px;'>Created by</p>
+            <p style='margin: 0; font-weight: bold; color: #4B0082;'>
+                Shrinivas Deshpande
+            </p>
+            <p style='margin: 5px 0; font-size: 11px; color: #888;'>
+                © 2025
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+
 def render_chat_message(msg: Dict[str, Any]):
-    """Render a chat message with all components."""
-    with st.chat_message(msg["role"]):
+    """Render a chat message with beautiful styling."""
+    with st.chat_message(msg["role"], avatar="👤" if msg["role"] == "user" else "🤖"):
         # Main message content
         st.markdown(msg["content"])
         
-        # Recommendation details
+        # Recommendation details with modern cards
         if "recommendation" in msg and msg["recommendation"]:
             rec = msg["recommendation"]
-            if rec.get('service') != 'N/A':
+            if rec.get('service') != 'N/A' and rec.get('service') != 'Information':
+                st.markdown("### 📦 Shipping Details")
+                
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("Service", rec.get('service', 'N/A'))
+                    st.markdown(f"""
+                    <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                padding: 15px; border-radius: 10px; text-align: center;'>
+                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>SERVICE</div>
+                        <div style='color: white; font-size: 16px; font-weight: bold; margin-top: 5px;'>
+                            {rec.get('service', 'N/A').replace('_', ' ')}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
                 with col2:
-                    st.metric("Cost", f"${rec.get('estimated_cost', 0):.2f}")
+                    st.markdown(f"""
+                    <div style='background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                                padding: 15px; border-radius: 10px; text-align: center;'>
+                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>COST</div>
+                        <div style='color: white; font-size: 20px; font-weight: bold; margin-top: 5px;'>
+                            ${rec.get('estimated_cost', 0):.2f}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
                 with col3:
-                    st.metric("Delivery", rec.get('delivery_time', 'N/A'))
+                    st.markdown(f"""
+                    <div style='background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                                padding: 15px; border-radius: 10px; text-align: center;'>
+                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>DELIVERY</div>
+                        <div style='color: white; font-size: 14px; font-weight: bold; margin-top: 5px;'>
+                            {rec.get('delivery_time', 'N/A')}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
         
         # Reflection with Chain-of-Thought
         if "reflection" in msg and msg["reflection"]:
             with st.expander("🤔 Agent Reflection", expanded=False):
-                # Show chain-of-thought if available
                 if "chain_of_thought" in msg and msg["chain_of_thought"]:
-                    st.markdown("### 🧠 Chain of Thought (Reasoning Process)")
+                    st.markdown("#### 🧠 Chain of Thought")
                     st.markdown(
-                        f'<div class="chain-of-thought-box" style="background-color: #f0f8ff; '
-                        f'padding: 15px; border-left: 4px solid #4CAF50; margin-bottom: 15px;">'
+                        f'<div style="background-color: #f0f8ff; padding: 15px; '
+                        f'border-left: 4px solid #4CAF50; border-radius: 5px; margin-bottom: 15px;">'
                         f'{msg["chain_of_thought"]}'
                         f'</div>',
                         unsafe_allow_html=True
                     )
                     st.markdown("---")
-                    st.markdown("### ✅ Final Reflection")
+                    st.markdown("#### ✅ Final Reflection")
                 
-                # Show final reflection
                 st.markdown(
-                    f'<div class="reflection-box">{msg["reflection"]}</div>',
+                    f'<div style="background-color: #f9f9f9; padding: 15px; '
+                    f'border-left: 4px solid #2196F3; border-radius: 5px;">'
+                    f'{msg["reflection"]}'
+                    f'</div>',
                     unsafe_allow_html=True
                 )
         
         # SQL Query
         if "sql" in msg and msg["sql"]:
-            with st.expander("🧠 Generated SQL", expanded=False):
+            with st.expander("💾 Generated SQL", expanded=False):
                 st.code(msg["sql"], language="sql")
         
         # Rate Data
         if "data" in msg and msg["data"]:
             with st.expander("📊 Rate Data", expanded=False):
                 df = pd.DataFrame(msg["data"])
-                st.dataframe(df, use_container_width=True)
+                st.dataframe(df, use_container_width=True, height=300)
                 
-                # Download button with unique key
                 csv = df.to_csv(index=False)
-                # Use message index as unique key
                 msg_idx = st.session_state.messages.index(msg) if msg in st.session_state.messages else 0
                 st.download_button(
                     label="📥 Download CSV",
                     data=csv,
-                    file_name="fedex_rates.csv",
+                    file_name=f"fedex_rates_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
                     key=f"download_csv_{msg_idx}"
                 )
@@ -122,8 +224,9 @@ def render_chat_message(msg: Dict[str, Any]):
         # Supervisor Decision
         if "supervisor" in msg and msg["supervisor"]:
             st.markdown(
-                f'<div class="supervisor-message">'
-                f'<h4>👔 Supervisor Review</h4>'
+                f'<div style="background-color: #fff3e0; padding: 15px; '
+                f'border-left: 4px solid #FF9800; border-radius: 5px; margin-top: 10px;">'
+                f'<h4 style="margin-top: 0;">👔 Supervisor Review</h4>'
                 f'<p>{msg["supervisor"]}</p>'
                 f'</div>',
                 unsafe_allow_html=True
@@ -131,17 +234,19 @@ def render_chat_message(msg: Dict[str, Any]):
         
         # Performance Metrics
         if "timing" in msg and msg["timing"]:
-            timing = msg["timing"]
-            total_time = msg.get("total_time", 0)
-            
             with st.expander("⏱️ Performance Metrics", expanded=False):
-                col1, col2, col3 = st.columns(3)
+                timing = msg["timing"]
+                total_time = msg.get("total_time", 0)
+                
+                col1, col2, col3, col4 = st.columns(4)
                 with col1:
-                    st.metric("Total Time", f"{total_time:.0f}ms")
+                    st.metric("Total", f"{total_time:.0f}ms")
                 with col2:
-                    st.metric("Parse Time", f"{timing.get('parse_request', 0):.0f}ms")
+                    st.metric("Parse", f"{timing.get('parse_request', 0):.0f}ms")
                 with col3:
-                    st.metric("SQL Time", f"{timing.get('sql_query', 0):.0f}ms")
+                    st.metric("SQL", f"{timing.get('sql_query', 0):.0f}ms")
+                with col4:
+                    st.metric("Recommend", f"{timing.get('generate_recommendation', 0):.0f}ms")
 
 
 def process_user_query(user_input: str, agent: UnifiedFedExAgent) -> Dict[str, Any]:
@@ -149,7 +254,6 @@ def process_user_query(user_input: str, agent: UnifiedFedExAgent) -> Dict[str, A
     try:
         logger.info(f"📝 Processing query: {user_input}")
         
-        # Process with unified agent
         result = agent.process_request(user_input)
         
         if not result['success']:
@@ -157,7 +261,7 @@ def process_user_query(user_input: str, agent: UnifiedFedExAgent) -> Dict[str, A
                 return {
                     'success': False,
                     'clarification_message': result['clarification_message'],
-                    'total_time': result['total_time']
+                    'total_time': result.get('total_time', 0)
                 }
             else:
                 return {
@@ -168,19 +272,19 @@ def process_user_query(user_input: str, agent: UnifiedFedExAgent) -> Dict[str, A
         
         # Build response text
         rec = result.get('recommendation', {})
-        if rec and rec.get('service') != 'N/A':
+        if rec and rec.get('service') not in ['N/A', 'Information']:
             response_text = rec.get('recommendation', 'No recommendation available.')
+        elif rec and rec.get('service') == 'Information':
+            response_text = rec.get('recommendation', 'Information query processed.')
         else:
             response_text = "I couldn't find suitable shipping options for your request."
         
-        # Add reflection if available
         if result.get('reflection'):
-            response_text += f"\n\n**Agent Reflection:** {result['reflection']}"
+            response_text += f"\n\n**💭 Agent Reflection:** {result['reflection']}"
         
-        # Add supervisor decision if available
         supervisor = result.get('supervisor', {})
         if supervisor.get('final_message'):
-            response_text += f"\n\n**Supervisor Review:** {supervisor['final_message']}"
+            response_text += f"\n\n**👔 Supervisor Review:** {supervisor['final_message']}"
         
         return {
             'success': True,
@@ -205,7 +309,8 @@ def process_user_query(user_input: str, agent: UnifiedFedExAgent) -> Dict[str, A
 
 
 def main():
-    """Main Streamlit application with beautiful modern UI."""
+    """Main Streamlit application with modern UI."""
+    # Page configuration
     st.set_page_config(
         page_title="FedEx Shipping Assistant",
         page_icon="📦",
@@ -213,277 +318,302 @@ def main():
         initial_sidebar_state="expanded"
     )
     
-    # Enhanced Custom CSS for beautiful UI
+    # Custom CSS for modern design
     st.markdown("""
     <style>
-    /* Main background gradient */
-    .stApp {
+    /* Main theme colors */
+    :root {
+        --primary-color: #4B0082;
+        --secondary-color: #667eea;
+        --accent-color: #764ba2;
+    }
+    
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Custom header styling */
+    .main-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    /* Chat container styling */
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        background-color: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Header styling */
-    h1 {
-        color: #4B0082;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        font-weight: 700;
-        text-align: center;
-        margin-bottom: 0.5rem;
-    }
-    
-    /* Subtitle styling */
-    .subtitle {
-        text-align: center;
-        color: #666;
-        font-size: 1.1rem;
-        margin-bottom: 2rem;
-    }
-    
-    /* Chain of thought box */
-    .chain-of-thought-box {
-        background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
-        padding: 20px;
-        border-left: 5px solid #4CAF50;
-        margin-bottom: 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Reflection box */
-    .reflection-box {
-        background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
-        padding: 20px;
-        border-left: 5px solid #2196F3;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Supervisor message */
-    .supervisor-message {
-        background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-        padding: 20px;
-        border-left: 5px solid #FF9800;
-        border-radius: 10px;
-        margin-top: 10px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Metric cards */
-    .stMetric {
-        background-color: #f8f9fa;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
-    
-    /* Calendar widget */
-    .calendar-widget {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 15px;
+        padding: 30px;
         border-radius: 15px;
         text-align: center;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        margin-bottom: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     }
     
-    .calendar-date {
-        font-size: 2.5rem;
+    .main-header h1 {
+        color: white;
+        margin: 0;
+        font-size: 42px;
         font-weight: 700;
+    }
+    
+    .main-header p {
+        color: rgba(255,255,255,0.9);
+        margin: 10px 0 0 0;
+        font-size: 18px;
+    }
+    
+    /* Chat message styling */
+    .stChatMessage {
+        background-color: #f8f9fa;
+        border-radius: 15px;
+        padding: 15px;
         margin: 10px 0;
     }
     
-    .calendar-day {
-        font-size: 1.2rem;
-        opacity: 0.9;
+    /* Input styling */
+    .stChatInputContainer {
+        border-top: 2px solid #667eea;
+        padding-top: 20px;
     }
     
-    /* Author info */
-    .author-info {
-        text-align: center;
-        color: #666;
-        font-size: 0.9rem;
-        padding: 10px;
-        margin-top: 20px;
-        border-top: 1px solid #e0e0e0;
+    /* Metric cards */
+    [data-testid="stMetricValue"] {
+        font-size: 24px;
+        font-weight: 600;
     }
     
-    /* Chat input enhancement */
-    .stChatInput {
-        border-radius: 25px;
-        border: 2px solid #667eea;
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background-color: #f0f2f6;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+    }
+    
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background-color: #f8f9fa;
+    }
+    
+    /* Info boxes */
+    .info-box {
+        background-color: #e3f2fd;
+        padding: 15px;
+        border-left: 4px solid #2196F3;
+        border-radius: 5px;
+        margin: 10px 0;
+    }
+    
+    /* Success boxes */
+    .success-box {
+        background-color: #e8f5e9;
+        padding: 15px;
+        border-left: 4px solid #4CAF50;
+        border-radius: 5px;
+        margin: 10px 0;
+    }
+    
+    /* Warning boxes */
+    .warning-box {
+        background-color: #fff3e0;
+        padding: 15px;
+        border-left: 4px solid #FF9800;
+        border-radius: 5px;
+        margin: 10px 0;
     }
     </style>
     """, unsafe_allow_html=True)
     
-    # Sidebar with Calendar Widget
-    with st.sidebar:
-        # Calendar Widget
-        today = datetime.now()
-        st.markdown(f"""
-        <div class="calendar-widget">
-            <div class="calendar-day">{today.strftime('%A')}</div>
-            <div class="calendar-date">{today.strftime('%d')}</div>
-            <div class="calendar-day">{today.strftime('%B %Y')}</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("### 📋 Quick Info")
-        st.info("**Available Zones**: 2-8\n\n**Weight Range**: 1-150 lbs\n\n**Services**: 6 FedEx options")
-        
-        st.markdown("### 🎯 Example Queries")
-        st.markdown("""
-        - "Send 10 lbs to Denver"
-        - "Cheapest for zone 5, 20 lbs"
-        - "Overnight to New York"
-        - "What are weight categories?"
-        """)
-        
-        st.markdown("### ⚙️ System Status")
-        try:
-            config = VannaConfig()
-            provider = config.llm_provider.upper()
-            model = config.model
-            st.success(f"✅ {provider} Active")
-            st.caption(f"Model: {model}")
-        except:
-            st.warning("⚠️ Config not loaded")
-        
-        # Author info in sidebar
-        st.markdown("---")
-        st.markdown("""
-        <div style="text-align: center; color: #666;">
-            <small>
-            💻 <strong>Developed by</strong><br/>
-            Shrinivas Deshpande<br/>
-            <em>AI-Powered Shipping Solutions</em>
-            </small>
-        </div>
-        """, unsafe_allow_html=True)
+    # Render sidebar
+    render_sidebar()
     
-    # Main content area
-    st.title("📦 FedEx Shipping Assistant")
-    st.markdown('<p class="subtitle">🤖 AI-Powered Rate Lookup with Intelligent Zone Mapping</p>', 
-                unsafe_allow_html=True)
+    # Main header
+    st.markdown("""
+    <div class='main-header'>
+        <h1>📦 FedEx Shipping Assistant</h1>
+        <p>Get instant shipping rates with AI-powered recommendations</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Initialize session state
     initialize_session_state()
     
     # Initialize agent
     if st.session_state.agent is None:
-        with st.spinner("Initializing FedEx Assistant..."):
+        with st.spinner("🚀 Initializing AI Assistant..."):
             st.session_state.agent = initialize_agent()
+            st.success("✅ AI Assistant ready!")
+            time.sleep(0.5)
+            st.rerun()
+    
+    # Quick tips
+    with st.expander("💡 Quick Tips", expanded=False):
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("""
+            **Example Queries:**
+            - "What is the cheapest rate for 10 lbs to New York?"
+            - "Send 5 lbs package from SF to Denver, budget $100"
+            - "Compare all services for Zone 5, 20 lbs"
+            - "What are different weight categories?"
+            """)
+        with col2:
+            st.markdown("""
+            **Features:**
+            - 🎯 Intelligent zone lookup
+            - 💰 Budget-aware recommendations
+            - ⚡ Real-time rate comparison
+            - 🤔 Reflection & verification
+            """)
     
     # Display chat messages
     for msg in st.session_state.messages:
         render_chat_message(msg)
     
-    # Chat input
-    if prompt := st.chat_input("Ask about shipping rates, delivery options, or service comparisons..."):
+    # Chat input with modern placeholder
+    if prompt := st.chat_input("💬 Ask about shipping rates, delivery times, or service comparisons..."):
         # Add user message
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
+        with st.chat_message("user", avatar="👤"):
             st.markdown(prompt)
         
         # Process query
-        with st.chat_message("assistant"):
-            with st.spinner("Processing your request..."):
+        with st.chat_message("assistant", avatar="🤖"):
+            with st.spinner("🔍 Analyzing your request..."):
                 result = process_user_query(prompt, st.session_state.agent)
             
             if not result['success']:
                 if 'clarification_message' in result:
-                    st.markdown(result['clarification_message'])
-                    # Don't save clarification messages to history
+                    st.markdown(
+                        f'<div class="info-box">{result["clarification_message"]}</div>',
+                        unsafe_allow_html=True
+                    )
                     return
                 else:
-                    st.error(result['error_message'])
+                    st.error(f"❌ {result['error_message']}")
                     return
             
             # Display response
             st.markdown(result['content'])
             
-            # Display additional components
-            if result.get('recommendation') and result['recommendation'].get('service') != 'N/A':
+            # Display recommendation cards
+            if result.get('recommendation') and result['recommendation'].get('service') not in ['N/A', 'Information']:
                 rec = result['recommendation']
+                
+                st.markdown("### 📦 Shipping Details")
                 col1, col2, col3 = st.columns(3)
+                
                 with col1:
-                    st.metric("Service", rec.get('service', 'N/A'))
+                    st.markdown(f"""
+                    <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                padding: 15px; border-radius: 10px; text-align: center;'>
+                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>SERVICE</div>
+                        <div style='color: white; font-size: 16px; font-weight: bold; margin-top: 5px;'>
+                            {rec.get('service', 'N/A').replace('_', ' ')}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
                 with col2:
-                    st.metric("Cost", f"${rec.get('estimated_cost', 0):.2f}")
+                    st.markdown(f"""
+                    <div style='background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                                padding: 15px; border-radius: 10px; text-align: center;'>
+                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>COST</div>
+                        <div style='color: white; font-size: 20px; font-weight: bold; margin-top: 5px;'>
+                            ${rec.get('estimated_cost', 0):.2f}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
                 with col3:
-                    st.metric("Delivery", rec.get('delivery_time', 'N/A'))
+                    st.markdown(f"""
+                    <div style='background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                                padding: 15px; border-radius: 10px; text-align: center;'>
+                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>DELIVERY</div>
+                        <div style='color: white; font-size: 14px; font-weight: bold; margin-top: 5px;'>
+                            {rec.get('delivery_time', 'N/A')}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
             
-            # Show reflection with chain-of-thought
+            # Show reflection
             if result.get('reflection'):
                 with st.expander("🤔 Agent Reflection", expanded=False):
                     if result.get('chain_of_thought'):
-                        st.markdown("### 🧠 Chain of Thought (Reasoning Process)")
+                        st.markdown("#### 🧠 Chain of Thought")
                         st.markdown(
-                            f'<div class="chain-of-thought-box">'
+                            f'<div style="background-color: #f0f8ff; padding: 15px; '
+                            f'border-left: 4px solid #4CAF50; border-radius: 5px; margin-bottom: 15px;">'
                             f'{result["chain_of_thought"]}'
                             f'</div>',
                             unsafe_allow_html=True
                         )
                         st.markdown("---")
-                        st.markdown("### ✅ Final Reflection")
+                        st.markdown("#### ✅ Final Reflection")
                     
                     st.markdown(
-                        f'<div class="reflection-box">{result["reflection"]}</div>',
+                        f'<div style="background-color: #f9f9f9; padding: 15px; '
+                        f'border-left: 4px solid #2196F3; border-radius: 5px;">'
+                        f'{result["reflection"]}'
+                        f'</div>',
                         unsafe_allow_html=True
                     )
             
             # Show SQL
             if result.get('sql'):
-                with st.expander("🧠 Generated SQL", expanded=False):
+                with st.expander("💾 Generated SQL", expanded=False):
                     st.code(result['sql'], language="sql")
             
             # Show data
             if result.get('data'):
                 with st.expander("📊 Rate Data", expanded=False):
                     df = pd.DataFrame(result['data'])
-                    st.dataframe(df, use_container_width=True)
+                    st.dataframe(df, use_container_width=True, height=300)
                     
                     csv = df.to_csv(index=False)
                     msg_idx = len(st.session_state.messages)
                     st.download_button(
                         label="📥 Download CSV",
                         data=csv,
-                        file_name="fedex_rates.csv",
+                        file_name=f"fedex_rates_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                         mime="text/csv",
                         key=f"download_csv_{msg_idx}"
                     )
             
-            # Show supervisor decision
+            # Show supervisor
             if result.get('supervisor'):
                 st.markdown(
-                    f'<div class="supervisor-message">'
-                    f'<h4>👔 Supervisor Review</h4>'
+                    f'<div style="background-color: #fff3e0; padding: 15px; '
+                    f'border-left: 4px solid #FF9800; border-radius: 5px; margin-top: 10px;">'
+                    f'<h4 style="margin-top: 0;">👔 Supervisor Review</h4>'
                     f'<p>{result["supervisor"]}</p>'
                     f'</div>',
                     unsafe_allow_html=True
                 )
             
-            # Show performance metrics
+            # Show performance
             if result.get('timing'):
                 with st.expander("⏱️ Performance Metrics", expanded=False):
                     timing = result['timing']
                     total_time = result.get('total_time', 0)
                     
-                    col1, col2, col3 = st.columns(3)
+                    col1, col2, col3, col4 = st.columns(4)
                     with col1:
-                        st.metric("Total Time", f"{total_time:.0f}ms")
+                        st.metric("Total", f"{total_time:.0f}ms")
                     with col2:
-                        st.metric("Parse Time", f"{timing.get('parse_request', 0):.0f}ms")
+                        st.metric("Parse", f"{timing.get('parse_request', 0):.0f}ms")
                     with col3:
-                        st.metric("SQL Time", f"{timing.get('sql_query', 0):.0f}ms")
+                        st.metric("SQL", f"{timing.get('sql_query', 0):.0f}ms")
+                    with col4:
+                        st.metric("Recommend", f"{timing.get('generate_recommendation', 0):.0f}ms")
         
         # Save to history
         msg_data = {
@@ -499,17 +629,6 @@ def main():
             "total_time": result.get('total_time', 0)
         }
         st.session_state.messages.append(msg_data)
-    
-    # Beautiful footer with author info
-    st.markdown("---")
-    st.markdown("""
-    <div class="author-info">
-        💻 <strong>Developed by Shrinivas Deshpande</strong> | 
-        🤖 AI-Powered Shipping Solutions | 
-        📅 {date} |
-        🔗 <a href="https://github.com/shdeshpa/Fedex_shipping_assistant" target="_blank">GitHub</a>
-    </div>
-    """.format(date=datetime.now().strftime('%B %Y')), unsafe_allow_html=True)
 
 
 if __name__ == "__main__":

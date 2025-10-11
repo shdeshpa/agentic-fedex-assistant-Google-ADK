@@ -18,9 +18,9 @@ from typing import Optional, Tuple, Dict, Any
 import pandas as pd
 from loguru import logger
 
-from .config import VannaConfig
-from .model_manager import VannaModelManager
-from .sql_engine import SQLiteEngine
+from src.Vanna.config import VannaConfig
+from src.Vanna.model_manager import VannaModelManager
+from src.Vanna.sql_engine import SQLiteEngine
 
 
 class TextToSQLEngine:

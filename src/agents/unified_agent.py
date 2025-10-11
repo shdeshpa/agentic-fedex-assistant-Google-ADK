@@ -33,9 +33,9 @@ from langchain_openai import ChatOpenAI
 from .state import ShippingState
 from .zone_lookup_tool import FedExZoneLookupTool
 from .validation_keywords import ValidationKeywords
-from Vanna.config import VannaConfig
-from Vanna.sql_engine import SQLiteEngine
-from Vanna.text_to_sql import TextToSQLEngine
+from src.Vanna.config import VannaConfig
+from src.Vanna.sql_engine import SQLiteEngine
+from src.Vanna.text_to_sql import TextToSQLEngine
 
 
 class UnifiedFedExAgent:

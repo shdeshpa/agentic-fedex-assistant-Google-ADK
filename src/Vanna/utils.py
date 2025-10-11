@@ -22,7 +22,7 @@ from datetime import datetime
 
 from loguru import logger
 
-from .config import VannaConfig
+from src.Vanna.config import VannaConfig
 
 
 def setup_logging(config: VannaConfig) -> None:

@@ -4,7 +4,7 @@
 #  Short Description: Vanna package initialization for modular FedEx rate queries
 #
 #  Creation date: 2025-10-09
-#  Author: Asif Qamar
+#  Author: Shrinivas Deshpande
 # =============================================================================
 
 """

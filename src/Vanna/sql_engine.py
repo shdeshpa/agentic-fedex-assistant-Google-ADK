@@ -21,7 +21,7 @@ from typing import Dict, List, Optional, Tuple, Any
 import pandas as pd
 from loguru import logger
 
-from .config import VannaConfig
+from src.Vanna.config import VannaConfig
 
 
 class SQLiteEngine:
