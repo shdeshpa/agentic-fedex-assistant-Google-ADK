@@ -150,6 +150,19 @@ class UnifiedFedExAgent:
         # Calculate total time
         total_time = (time.time() * 1000) - start_time
         
+        # Get delivery date weather if recommendation exists
+        delivery_weather = None
+        if state.get('recommendation') and state['recommendation'].get('delivery_date_obj'):
+            delivery_date = state['recommendation']['delivery_date_obj']
+            if state.get('weather_info') and self.weather_tool.enabled:
+                try:
+                    # Get weather for delivery date (simplified - using current location)
+                    delivery_weather = self.weather_tool.get_weather_for_zip(
+                        state['weather_info'].get('zip_code', '10001')  # Default to NYC
+                    )
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not get delivery date weather: {e}")
+        
         return {
             'success': True,
             'recommendation': state.get('recommendation', {}),
@@ -160,6 +173,7 @@ class UnifiedFedExAgent:
             'rate_results': state.get('rate_results', {}),
             'weather_summary': state.get('weather_summary', ''),
             'weather_info': state.get('weather_info', {}),
+            'delivery_weather': delivery_weather,
             'timing': state.get('timing', {}),
             'total_time': total_time
         }
@@ -517,10 +531,17 @@ Return ONLY valid JSON with exactly these keys, no additional text:
             single_value = list(data[0].values())[0]
             service_name = 'FedEx Express Saver'  # Default for cheapest queries
             
+            # Calculate delivery date
+            delivery_info = self._calculate_delivery_date(service_name)
+            
             state['recommendation'] = {
                 'service': service_name,
                 'estimated_cost': float(single_value) if single_value else 0.0,
                 'delivery_time': self._get_delivery_time(service_name),
+                'delivery_date': delivery_info['delivery_date'],
+                'delivery_date_obj': delivery_info['delivery_date_obj'],
+                'business_days': delivery_info['business_days'],
+                'needs_confirmation': True,
                 'recommendation': f"Best option: {service_name} at ${single_value:.2f}. Delivery: {self._get_delivery_time(service_name)}. This is the most cost-effective option available."
             }
             logger.success(f"✅ Recommendation: {service_name} at ${single_value:.2f}")
@@ -540,10 +561,17 @@ Return ONLY valid JSON with exactly these keys, no additional text:
             
             service_name = 'FedEx Express Saver'  # Default for cheapest queries
             
+            # Calculate delivery date
+            delivery_info = self._calculate_delivery_date(service_name)
+            
             state['recommendation'] = {
                 'service': service_name,
                 'estimated_cost': float(cheapest_rate) if cheapest_rate else 0.0,
                 'delivery_time': self._get_delivery_time(service_name),
+                'delivery_date': delivery_info['delivery_date'],
+                'delivery_date_obj': delivery_info['delivery_date_obj'],
+                'business_days': delivery_info['business_days'],
+                'needs_confirmation': True,
                 'recommendation': f"Best option: {service_name} at ${cheapest_rate:.2f}. Delivery: {self._get_delivery_time(service_name)}. This is the most cost-effective option available."
             }
             logger.success(f"✅ Recommendation: {service_name} at ${cheapest_rate:.2f}")
@@ -591,19 +619,29 @@ Return ONLY valid JSON with exactly these keys, no additional text:
                     
                     # Only filter by budget if budget was explicitly set (not default)
                     if budget >= 10000:  # Default budget means no budget constraint
+                        delivery_info = self._calculate_delivery_date(service)
                         all_options.append({
                             'service': service,
                             'cost': cost,
                             'delivery_days': self._estimate_delivery_days(service),
                             'delivery_time': self._get_delivery_time(service),
+                            'delivery_date': delivery_info['delivery_date'],
+                            'delivery_date_obj': delivery_info['delivery_date_obj'],
+                            'business_days': delivery_info['business_days'],
+                            'needs_confirmation': True,
                             'row': row
                         })
                     elif cost <= budget:  # Within explicit budget
+                        delivery_info = self._calculate_delivery_date(service)
                         all_options.append({
                             'service': service,
                             'cost': cost,
                             'delivery_days': self._estimate_delivery_days(service),
                             'delivery_time': self._get_delivery_time(service),
+                            'delivery_date': delivery_info['delivery_date'],
+                            'delivery_date_obj': delivery_info['delivery_date_obj'],
+                            'business_days': delivery_info['business_days'],
+                            'needs_confirmation': True,
                             'row': row
                         })
         
@@ -668,6 +706,39 @@ Return ONLY valid JSON with exactly these keys, no additional text:
             'FedEx_Express_Saver': '3rd day by 5 p.m.'
         }
         return delivery_times.get(service, 'Standard delivery')
+    
+    def _calculate_delivery_date(self, service_name: str) -> Dict[str, Any]:
+        """Calculate the actual delivery date based on service type."""
+        from datetime import datetime, timedelta
+        
+        today = datetime.now()
+        delivery_days = {
+            'FedEx_First_Overnight': 1,
+            'FedEx_Priority_Overnight': 1,
+            'FedEx_Standard_Overnight': 1,
+            'FedEx_2Day_AM': 2,
+            'FedEx_2Day': 2,
+            'FedEx_Express_Saver': 3
+        }
+        
+        business_days = delivery_days.get(service_name, 3)
+        
+        # Calculate delivery date (skip weekends)
+        delivery_date = today
+        days_added = 0
+        
+        while days_added < business_days:
+            delivery_date += timedelta(days=1)
+            # Skip weekends (Saturday=5, Sunday=6)
+            if delivery_date.weekday() < 5:
+                days_added += 1
+        
+        return {
+            'delivery_date': delivery_date.strftime("%A, %B %d, %Y"),
+            'delivery_date_obj': delivery_date,
+            'business_days': business_days,
+            'is_weekend': delivery_date.weekday() >= 5
+        }
     
     def _perform_reflection(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Perform reflection when requested by user."""

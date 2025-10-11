@@ -74,83 +74,60 @@ def render_sidebar():
         st.markdown("### 📅 Calendar")
         current_date = datetime.now()
         
-        # Generate 2-month calendar
-        def generate_calendar():
-            import calendar
-            
-            # Current month
-            current_month = current_date.month
-            current_year = current_date.year
-            current_day = current_date.day
-            
-            # Next month
-            next_month = current_month + 1 if current_month < 12 else 1
-            next_year = current_year if current_month < 12 else current_year + 1
-            
-            # Generate calendar HTML
-            cal_html = """
-            <div class='calendar-container'>
-                <div style='color: white; font-size: 20px; font-weight: bold; margin-bottom: 15px;'>
-                    {current_month} {current_year}
-                </div>
-                <div class='calendar-dates'>
-            """.format(
-                current_month=calendar.month_name[current_month],
-                current_year=current_year
-            )
-            
-            # Add day headers
-            days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
-            for day in days:
-                cal_html += f"<div class='calendar-date' style='font-weight: bold; text-align: center;'>{day}</div>"
-            
-            # Get calendar for current month
-            month_cal = calendar.monthcalendar(current_year, current_month)
-            for week in month_cal:
-                for day in week:
-                    if day == 0:
-                        cal_html += "<div class='calendar-date other-month'></div>"
-                    elif day == current_day:
-                        cal_html += f"<div class='calendar-date today'>{day}</div>"
-                    else:
-                        cal_html += f"<div class='calendar-date'>{day}</div>"
-            
-            cal_html += """
-                </div>
-                
-                <div style='margin-top: 20px; color: white; font-size: 20px; font-weight: bold;'>
-                    {next_month} {next_year}
-                </div>
-                <div class='calendar-dates'>
-            """.format(
-                next_month=calendar.month_name[next_month],
-                next_year=next_year
-            )
-            
-            # Add day headers for next month
-            for day in days:
-                cal_html += f"<div class='calendar-date' style='font-weight: bold; text-align: center;'>{day}</div>"
-            
-            # Get calendar for next month
-            next_month_cal = calendar.monthcalendar(next_year, next_month)
-            for week in next_month_cal:
-                for day in week:
-                    if day == 0:
-                        cal_html += "<div class='calendar-date other-month'></div>"
-                    else:
-                        cal_html += f"<div class='calendar-date'>{day}</div>"
-            
-            cal_html += """
-                </div>
-                <div style='margin-top: 15px; color: rgba(255,255,255,0.8); font-size: 14px;'>
-                    Today: {today}
-                </div>
-            </div>
-            """.format(today=current_date.strftime("%A, %B %d"))
-            
-            return cal_html
+        # Generate 2-month calendar using Streamlit components
+        import calendar
         
-        st.markdown(generate_calendar(), unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**Current Month**")
+            # Current month calendar
+            month_cal = calendar.monthcalendar(current_date.year, current_date.month)
+            
+            # Header
+            header = calendar.weekheader(2)
+            st.markdown(f"**{header}**")
+            
+            # Calendar body
+            for week in month_cal:
+                cols = st.columns(7)
+                for i, day in enumerate(week):
+                    with cols[i]:
+                        if day == 0:
+                            st.write("")
+                        elif day == current_date.day:
+                            st.markdown(f"**{day}**", help="Today")
+                        else:
+                            st.write(str(day))
+        
+        with col2:
+            # Next month
+            next_month = current_date.month + 1 if current_date.month < 12 else 1
+            next_year = current_date.year if current_date.month < 12 else current_date.year + 1
+            
+            st.markdown("**Next Month**")
+            next_month_cal = calendar.monthcalendar(next_year, next_month)
+            
+            # Header
+            st.markdown(f"**{header}**")
+            
+            # Calendar body
+            for week in next_month_cal:
+                cols = st.columns(7)
+                for i, day in enumerate(week):
+                    with cols[i]:
+                        if day == 0:
+                            st.write("")
+                        else:
+                            st.write(str(day))
+        
+        # Today's date info
+        st.markdown(f"""
+        <div style='margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); 
+                    border-radius: 8px; text-align: center; color: white;'>
+            <strong>Today: {current_date.strftime("%A, %B %d, %Y")}</strong>
+        </div>
+        """, unsafe_allow_html=True)
         
         st.markdown("---")
         
@@ -205,7 +182,7 @@ def render_chat_message(msg: Dict[str, Any]):
             if rec.get('service') != 'N/A' and rec.get('service') != 'Information':
                 st.markdown("### 📦 Shipping Details")
                 
-                col1, col2, col3 = st.columns(3)
+                col1, col2, col3, col4 = st.columns(4)
                 with col1:
                     st.markdown(f"""
                     <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -235,6 +212,18 @@ def render_chat_message(msg: Dict[str, Any]):
                         <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>DELIVERY</div>
                         <div style='color: white; font-size: 14px; font-weight: bold; margin-top: 5px;'>
                             {rec.get('delivery_time', 'N/A')}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col4:
+                    delivery_date = rec.get('delivery_date', 'N/A')
+                    st.markdown(f"""
+                    <div style='background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+                                padding: 15px; border-radius: 10px; text-align: center;'>
+                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>DELIVERY DATE</div>
+                        <div style='color: white; font-size: 12px; font-weight: bold; margin-top: 5px;'>
+                            {delivery_date}
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -708,7 +697,7 @@ def main():
                 rec = result['recommendation']
                 
                 st.markdown("### 📦 Shipping Details")
-                col1, col2, col3 = st.columns(3)
+                col1, col2, col3, col4 = st.columns(4)
                 
                 with col1:
                     st.markdown(f"""
@@ -742,6 +731,46 @@ def main():
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
+                
+                with col4:
+                    delivery_date = rec.get('delivery_date', 'N/A')
+                    st.markdown(f"""
+                    <div style='background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+                                padding: 15px; border-radius: 10px; text-align: center;'>
+                        <div style='color: rgba(255,255,255,0.8); font-size: 12px;'>DELIVERY DATE</div>
+                        <div style='color: white; font-size: 12px; font-weight: bold; margin-top: 5px;'>
+                            {delivery_date}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                # User confirmation
+                if rec.get('needs_confirmation', False):
+                    st.markdown("---")
+                    
+                    col1, col2, col3 = st.columns([1, 2, 1])
+                    with col2:
+                        st.markdown("### 🤔 Proceed with this rate?")
+                        
+                        if st.button("✅ Yes, proceed", key=f"proceed_{len(st.session_state.messages)}"):
+                            st.success("✅ Great choice! Your shipment will be processed.")
+                            
+                            # Show delivery date weather if available
+                            if result.get('delivery_weather') and result['delivery_weather'].get('success'):
+                                delivery_weather = result['delivery_weather']['weather_info']
+                                st.markdown("### 🌤️ Weather for Delivery Day")
+                                st.info(f"""
+                                **Delivery Date Weather:**
+                                - Temperature: {delivery_weather['current_temp']}°F
+                                - Conditions: {delivery_weather['description']}
+                                - Humidity: {delivery_weather['humidity']}%
+                                - Wind: {delivery_weather['wind_speed']} mph
+                                
+                                **Shipping Recommendation:** {delivery_weather['shipping_recommendation']}
+                                """)
+                            
+                        if st.button("❌ No, show other options", key=f"decline_{len(st.session_state.messages)}"):
+                            st.info("Let me show you alternative shipping options...")
             
             # Show reflection
             if result.get('reflection'):
