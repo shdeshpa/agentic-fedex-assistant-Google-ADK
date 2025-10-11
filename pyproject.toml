@@ -1,0 +1,55 @@
+[project]
+name = "fedex"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "docling>=2.55.1",
+    "dspy-ai>=3.0.3",
+    "fastembed>=0.7.3",
+    "ipython-sql>=0.5.0",
+    "langchain>=0.3.27",
+    "langchain-community>=0.3.31",
+    "langchain-ollama>=0.3.10",
+    "langgraph>=0.6.10",
+    "loguru>=0.7.3",
+    "nicegui>=3.0.3",
+    "ollama>=0.6.0",
+    "openpyxl>=3.1.5",
+    "pandas>=2.3.3",
+    "pdfminer-six>=20250506",
+    "pdfplumber>=0.11.7",
+    "pydantic>=2.11.10",
+    "pymupdf>=1.26.4",
+    "pypdf2>=3.0.1",
+    "python-dateutil>=2.9.0.post0",
+    "qdrant-client>=1.15.1",
+    "rapidfuzz>=3.14.1",
+    "regex>=2025.9.18",
+    "requests>=2.32.5",
+    "rich>=14.1.0",
+    "sqlite-utils>=3.38",
+    "streamlit>=1.50.0",
+    "svlearn-bootcamp>=0.1.7",
+    "typer>=0.19.2",
+    "vanna>=0.7.9",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+# If you also build sdists and want data included:
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    # ... other includes like README, pyproject.toml, etc.
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fedex"]

@@ -1,0 +1,154 @@
+[
+  [
+    "What is the cheapest rate for Zone 3?",
+    "SELECT MIN(FedEx_Express_Saver) FROM fedex_rates WHERE Zone = 3;"
+  ],
+  [
+    "Find the cheapest Express Saver rate for Zone 3",
+    "SELECT MIN(FedEx_Express_Saver) as cheapest_rate FROM fedex_rates WHERE Zone = 3;"
+  ],
+  [
+    "What is the cheapest rate for Zone 5?",
+    "SELECT MIN(FedEx_Express_Saver) as cheapest_rate FROM fedex_rates WHERE Zone = 5 AND FedEx_Express_Saver IS NOT NULL;"
+  ],
+  [
+    "Find the cheapest shipping option for Zone 3",
+    "SELECT MIN(FedEx_Express_Saver) as cheapest_rate FROM fedex_rates WHERE Zone = 3 AND FedEx_Express_Saver IS NOT NULL;"
+  ],
+  [
+    "What's the lowest cost service for Zone 7?",
+    "SELECT MIN(FedEx_Express_Saver) as lowest_cost FROM fedex_rates WHERE Zone = 7 AND FedEx_Express_Saver IS NOT NULL;"
+  ],
+  [
+    "Show the most economical rate for Zone 4",
+    "SELECT MIN(FedEx_Express_Saver) as economical_rate FROM fedex_rates WHERE Zone = 4 AND FedEx_Express_Saver IS NOT NULL;"
+  ],
+  [
+    "What's the best value shipping for Zone 6?",
+    "SELECT MIN(FedEx_Express_Saver) as best_value FROM fedex_rates WHERE Zone = 6 AND FedEx_Express_Saver IS NOT NULL;"
+  ],
+  [
+    "What's the most affordable option for Zone 8?",
+    "SELECT MIN(FedEx_Express_Saver) as most_affordable FROM fedex_rates WHERE Zone = 8 AND FedEx_Express_Saver IS NOT NULL;"
+  ],
+  [
+    "What are the rates for Zone 3 packages under 10 pounds?",
+    "SELECT Zone, Weight, FedEx_First_Overnight, FedEx_Priority_Overnight, FedEx_Standard_Overnight, FedEx_2Day_AM, FedEx_2Day, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 3 AND Weight <= 10;"
+  ],
+  [
+    "Show rates for Zone 3 under 10 lbs",
+    "SELECT Zone, Weight, FedEx_First_Overnight, FedEx_Priority_Overnight, FedEx_Standard_Overnight, FedEx_2Day_AM, FedEx_2Day, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 3 AND Weight <= 10;"
+  ],
+  [
+    "What are all the rates for Zone 2?",
+    "SELECT Zone, Weight, FedEx_First_Overnight, FedEx_Priority_Overnight, FedEx_Standard_Overnight, FedEx_2Day_AM, FedEx_2Day, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 2;"
+  ],
+  [
+    "Show all rates for Zone 4, 25 lbs",
+    "SELECT Zone, Weight, FedEx_First_Overnight, FedEx_Priority_Overnight, FedEx_Standard_Overnight, FedEx_2Day_AM, FedEx_2Day, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 4 AND Weight = 25;"
+  ],
+  [
+    "Show rates for all zones at 25 pounds",
+    "SELECT Zone, Weight, FedEx_2Day, FedEx_Express_Saver FROM fedex_rates WHERE Weight = 25 ORDER BY Zone;"
+  ],
+  [
+    "Show Priority Overnight rates for Zone 5",
+    "SELECT Zone, Weight, FedEx_Priority_Overnight FROM fedex_rates WHERE Zone = 5 ORDER BY Weight;"
+  ],
+  [
+    "What is the FedEx 2Day rate for Zone 2, 10 lbs?",
+    "SELECT Zone, Weight, FedEx_2Day FROM fedex_rates WHERE Zone = 2 AND Weight = 10;"
+  ],
+  [
+    "Show the top 3 cheapest FedEx 2Day rates",
+    "SELECT Zone, Weight, FedEx_2Day FROM fedex_rates WHERE FedEx_2Day IS NOT NULL ORDER BY FedEx_2Day ASC LIMIT 3;"
+  ],
+  [
+    "What is rate for 4 lbs package to zone 6 that delivers next day 9 am?",
+    "SELECT FedEx_First_Overnight FROM fedex_rates WHERE Zone = 6 AND Weight = 4 AND FedEx_First_Overnight IS NOT NULL;"
+  ],
+  [
+    "Ship 15 lbs to Zone 8 within $200 budget",
+    "SELECT Zone, Weight, FedEx_Express_Saver, FedEx_2Day, FedEx_2Day_AM FROM fedex_rates WHERE Zone = 8 AND Weight = 15;"
+  ],
+  [
+    "Show all rates for 15 lbs to Zone 8",
+    "SELECT Zone, Weight, FedEx_First_Overnight, FedEx_Priority_Overnight, FedEx_Standard_Overnight, FedEx_2Day_AM, FedEx_2Day, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 8 AND Weight = 15;"
+  ],
+  [
+    "Find rates for Zone 5, 10 lbs, budget $100",
+    "SELECT Zone, Weight, FedEx_Express_Saver, FedEx_2Day FROM fedex_rates WHERE Zone = 5 AND Weight = 10;"
+  ],
+  [
+    "What's the cheapest service for Zone 6, 15 lbs?",
+    "SELECT Zone, Weight, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 6 AND Weight = 15;"
+  ],
+  [
+    "Show the cheapest rate for each zone at 15 lbs",
+    "SELECT Zone, Weight, MIN(FedEx_Express_Saver) as cheapest_rate FROM fedex_rates WHERE Weight = 15 GROUP BY Zone ORDER BY Zone;"
+  ],
+  [
+    "What is cheapest rate for 10lbs for zone 5?",
+    "SELECT Zone, Weight, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 5 AND Weight = 10;"
+  ],
+  [
+    "What is the cheapest rate for Zone 5?",
+    "SELECT Zone, Weight, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 5 AND Weight = 10;"
+  ],
+  [
+    "Find the cheapest shipping option for Zone 3",
+    "SELECT Zone, Weight, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 3 AND Weight = 10;"
+  ],
+  [
+    "What's the lowest cost service for Zone 7?",
+    "SELECT Zone, Weight, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 7 AND Weight = 10;"
+  ],
+  [
+    "I want to send 5 lbs package from San Francisco to New York. I have budget of 100$. Whats my best option",
+    "SELECT Zone, Weight, FedEx_First_Overnight, FedEx_Priority_Overnight, FedEx_Standard_Overnight, FedEx_2Day_AM, FedEx_2Day, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 8 AND Weight = 5;"
+  ],
+  [
+    "Send 10 lbs to Chicago with $150 budget",
+    "SELECT Zone, Weight, FedEx_First_Overnight, FedEx_Priority_Overnight, FedEx_Standard_Overnight, FedEx_2Day_AM, FedEx_2Day, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 8 AND Weight = 10;"
+  ],
+  [
+    "Package weighing 15 lbs to Boston, budget $200",
+    "SELECT Zone, Weight, FedEx_First_Overnight, FedEx_Priority_Overnight, FedEx_Standard_Overnight, FedEx_2Day_AM, FedEx_2Day, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 7 AND Weight = 15;"
+  ],
+  [
+    "I want to send 30lbs from Fremont, CA to San Francisco, CA. What are the cheapest, fastest services?",
+    "SELECT Zone, Weight, FedEx_Express_Saver, FedEx_2Day FROM fedex_rates WHERE Zone = 2 AND Weight = 30;"
+  ],
+  [
+    "Ship 25 lbs from Los Angeles to San Diego, need cheap and fast",
+    "SELECT Zone, Weight, FedEx_Express_Saver, FedEx_2Day, FedEx_Standard_Overnight FROM fedex_rates WHERE Zone = 2 AND Weight = 25;"
+  ],
+  [
+    "What are the average rates for each zone?",
+    "SELECT Zone, ROUND(AVG(FedEx_2Day), 2) as avg_2day_rate, ROUND(AVG(FedEx_Express_Saver), 2) as avg_express_saver FROM fedex_rates GROUP BY Zone ORDER BY Zone;"
+  ],
+  [
+    "Find the top 3 cheapest 2Day rates across all zones",
+    "SELECT Zone, Weight, FedEx_2Day FROM fedex_rates WHERE FedEx_2Day IS NOT NULL ORDER BY FedEx_2Day ASC LIMIT 3;"
+  ],
+  [
+    "Ship 15 lbs from CA to NY budget $200",
+    "SELECT Zone, Weight, FedEx_Express_Saver, FedEx_2Day, FedEx_2Day_AM, FedEx_Standard_Overnight FROM fedex_rates WHERE Zone = 8 AND Weight = 15;"
+  ],
+  [
+    "Send 1 lb document from San Francisco to Los Angeles cheapest option",
+    "SELECT Zone, Weight, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 2 AND Weight = 1;"
+  ],
+  [
+    "Overnight delivery 20 lbs to New York",
+    "SELECT Zone, Weight, FedEx_First_Overnight, FedEx_Priority_Overnight, FedEx_Standard_Overnight FROM fedex_rates WHERE Zone = 8 AND Weight = 20;"
+  ],
+  [
+    "2-day shipping 30 lbs to Chicago",
+    "SELECT Zone, Weight, FedEx_2Day, FedEx_2Day_AM FROM fedex_rates WHERE Zone = 5 AND Weight = 30;"
+  ],
+  [
+    "Cheapest way to ship 5 lbs to Boston",
+    "SELECT Zone, Weight, FedEx_Express_Saver FROM fedex_rates WHERE Zone = 7 AND Weight = 5;"
+  ]
+]
