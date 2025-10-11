@@ -33,6 +33,7 @@ from langchain_openai import ChatOpenAI
 from .state import ShippingState
 from .zone_lookup_tool import FedExZoneLookupTool
 from .validation_keywords import ValidationKeywords
+from .weather_tool import WeatherLookupTool
 from src.Vanna.config import VannaConfig
 from src.Vanna.sql_engine import SQLiteEngine
 from src.Vanna.text_to_sql import TextToSQLEngine
@@ -90,6 +91,7 @@ class UnifiedFedExAgent:
             llm_provider=self.config.llm_provider,
             api_key=self.config.openai_api_key if self.config.llm_provider == "openai" else None
         )
+        self.weather_tool = WeatherLookupTool()
         self.sql_engine = SQLiteEngine(self.config)
         self.text_to_sql = TextToSQLEngine(self.config)
         
@@ -156,6 +158,8 @@ class UnifiedFedExAgent:
             'supervisor': state.get('supervisor_decision', {}),
             'sql_query': state.get('sql_query', ''),
             'rate_results': state.get('rate_results', {}),
+            'weather_summary': state.get('weather_summary', ''),
+            'weather_info': state.get('weather_info', {}),
             'timing': state.get('timing', {}),
             'total_time': total_time
         }
@@ -327,6 +331,20 @@ Return ONLY valid JSON with exactly these keys, no additional text:
                         state['zone'] = zone_info['zone']
                         state['destination'] = zone_info['explanation'].split(' is in')[0]
                         logger.info(f"✅ {zone_info['explanation']}")
+                        
+                        # Get weather information if ZIP code is available
+                        if zone_info.get('zip_code'):
+                            try:
+                                logger.info(f"🌤️ Getting weather for ZIP {zone_info['zip_code']}")
+                                weather_result = self.weather_tool.get_weather_for_zip(zone_info['zip_code'])
+                                if weather_result['success']:
+                                    state['weather_info'] = weather_result['weather_info']
+                                    state['weather_summary'] = self.weather_tool.get_weather_summary(zone_info['zip_code'])
+                                    logger.success(f"✅ Weather retrieved for {weather_result['weather_info']['location']}")
+                                else:
+                                    logger.warning(f"⚠️ Weather lookup failed: {weather_result.get('error', 'Unknown error')}")
+                            except Exception as e:
+                                logger.error(f"❌ Weather lookup error: {e}")
                 else:
                     # Try as city name only
                     zone_info = self.zone_lookup.get_zone_with_correction(

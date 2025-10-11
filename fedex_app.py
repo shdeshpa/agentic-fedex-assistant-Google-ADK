@@ -64,32 +64,93 @@ def render_sidebar():
         <div style='text-align: center; padding: 20px 0;'>
             <h1 style='color: #4B0082; margin: 0;'>📦</h1>
             <h2 style='color: #4B0082; margin: 5px 0; font-size: 24px;'>FedEx Assistant</h2>
-            <p style='color: #666; font-size: 14px; margin: 0;'>AI-Powered Shipping</p>
+            <p style='color: #cccccc; font-size: 14px; margin: 0;'>AI-Powered Shipping</p>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("---")
         
-        # Calendar Widget
-        st.markdown("### 📅 Today's Date")
+        # 2-Month Calendar Widget
+        st.markdown("### 📅 Calendar")
         current_date = datetime.now()
         
-        # Create a nice date display
-        st.markdown(f"""
-        <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    padding: 20px; border-radius: 15px; text-align: center;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
-            <div style='color: white; font-size: 48px; font-weight: bold; margin: 0;'>
-                {current_date.strftime("%d")}
+        # Generate 2-month calendar
+        def generate_calendar():
+            import calendar
+            
+            # Current month
+            current_month = current_date.month
+            current_year = current_date.year
+            current_day = current_date.day
+            
+            # Next month
+            next_month = current_month + 1 if current_month < 12 else 1
+            next_year = current_year if current_month < 12 else current_year + 1
+            
+            # Generate calendar HTML
+            cal_html = """
+            <div class='calendar-container'>
+                <div style='color: white; font-size: 20px; font-weight: bold; margin-bottom: 15px;'>
+                    {current_month} {current_year}
+                </div>
+                <div class='calendar-dates'>
+            """.format(
+                current_month=calendar.month_name[current_month],
+                current_year=current_year
+            )
+            
+            # Add day headers
+            days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+            for day in days:
+                cal_html += f"<div class='calendar-date' style='font-weight: bold; text-align: center;'>{day}</div>"
+            
+            # Get calendar for current month
+            month_cal = calendar.monthcalendar(current_year, current_month)
+            for week in month_cal:
+                for day in week:
+                    if day == 0:
+                        cal_html += "<div class='calendar-date other-month'></div>"
+                    elif day == current_day:
+                        cal_html += f"<div class='calendar-date today'>{day}</div>"
+                    else:
+                        cal_html += f"<div class='calendar-date'>{day}</div>"
+            
+            cal_html += """
+                </div>
+                
+                <div style='margin-top: 20px; color: white; font-size: 20px; font-weight: bold;'>
+                    {next_month} {next_year}
+                </div>
+                <div class='calendar-dates'>
+            """.format(
+                next_month=calendar.month_name[next_month],
+                next_year=next_year
+            )
+            
+            # Add day headers for next month
+            for day in days:
+                cal_html += f"<div class='calendar-date' style='font-weight: bold; text-align: center;'>{day}</div>"
+            
+            # Get calendar for next month
+            next_month_cal = calendar.monthcalendar(next_year, next_month)
+            for week in next_month_cal:
+                for day in week:
+                    if day == 0:
+                        cal_html += "<div class='calendar-date other-month'></div>"
+                    else:
+                        cal_html += f"<div class='calendar-date'>{day}</div>"
+            
+            cal_html += """
+                </div>
+                <div style='margin-top: 15px; color: rgba(255,255,255,0.8); font-size: 14px;'>
+                    Today: {today}
+                </div>
             </div>
-            <div style='color: rgba(255,255,255,0.9); font-size: 18px; margin: 5px 0;'>
-                {current_date.strftime("%B %Y")}
-            </div>
-            <div style='color: rgba(255,255,255,0.8); font-size: 14px;'>
-                {current_date.strftime("%A")}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """.format(today=current_date.strftime("%A, %B %d"))
+            
+            return cal_html
+        
+        st.markdown(generate_calendar(), unsafe_allow_html=True)
         
         st.markdown("---")
         
@@ -114,18 +175,19 @@ def render_sidebar():
         st.caption("🌐 Zones: 2-8")
         st.caption("⚖️ Weights: 1-150 lbs")
         st.caption("📦 Services: 6 tiers")
+        st.caption("🌤️ Weather: Available")
         
         st.markdown("---")
         
-        # Author Info
+        # Author Info - More Prominent
         st.markdown("""
-        <div style='text-align: center; padding: 10px 0; color: #666;'>
-            <p style='margin: 5px 0; font-size: 12px;'>Created by</p>
-            <p style='margin: 0; font-weight: bold; color: #4B0082;'>
+        <div class='author-info'>
+            <h4 style='color: white; margin: 0 0 5px 0; font-size: 16px;'>👨‍💻 Created by</h4>
+            <p style='color: white; margin: 0; font-weight: bold; font-size: 14px;'>
                 Shrinivas Deshpande
             </p>
-            <p style='margin: 5px 0; font-size: 11px; color: #888;'>
-                © 2025
+            <p style='color: rgba(255,255,255,0.8); margin: 5px 0 0 0; font-size: 11px;'>
+                © 2025 | AI-Powered FedEx Assistant
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -221,6 +283,11 @@ def render_chat_message(msg: Dict[str, Any]):
                     key=f"download_csv_{msg_idx}"
                 )
         
+        # Weather Information
+        if "weather_summary" in msg and msg["weather_summary"]:
+            with st.expander("🌤️ Weather Information", expanded=False):
+                st.markdown(msg["weather_summary"])
+        
         # Supervisor Decision
         if "supervisor" in msg and msg["supervisor"]:
             st.markdown(
@@ -286,6 +353,10 @@ def process_user_query(user_input: str, agent: UnifiedFedExAgent) -> Dict[str, A
         if supervisor.get('final_message'):
             response_text += f"\n\n**👔 Supervisor Review:** {supervisor['final_message']}"
         
+        # Add weather information to response if available
+        if result.get('weather_summary'):
+            response_text += f"\n\n**🌤️ Weather Information:**\n{result['weather_summary']}"
+        
         return {
             'success': True,
             'content': response_text,
@@ -295,6 +366,8 @@ def process_user_query(user_input: str, agent: UnifiedFedExAgent) -> Dict[str, A
             'supervisor': supervisor.get('final_message', ''),
             'sql': result.get('sql_query', ''),
             'data': result.get('rate_results', {}).get('data', []),
+            'weather_summary': result.get('weather_summary', ''),
+            'weather_info': result.get('weather_info', {}),
             'timing': result.get('timing', {}),
             'total_time': result.get('total_time', 0)
         }
@@ -318,14 +391,24 @@ def main():
         initial_sidebar_state="expanded"
     )
     
-    # Custom CSS for modern design
+    # Custom CSS for modern dark theme
     st.markdown("""
     <style>
-    /* Main theme colors */
+    /* Dark theme colors */
     :root {
         --primary-color: #4B0082;
         --secondary-color: #667eea;
         --accent-color: #764ba2;
+        --dark-bg: #1e1e1e;
+        --card-bg: #2d2d2d;
+        --text-primary: #ffffff;
+        --text-secondary: #cccccc;
+    }
+    
+    /* Main app background */
+    .main .block-container {
+        background-color: var(--dark-bg);
+        color: var(--text-primary);
     }
     
     /* Hide Streamlit branding */
@@ -339,7 +422,7 @@ def main():
         border-radius: 15px;
         text-align: center;
         margin-bottom: 30px;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.3);
     }
     
     .main-header h1 {
@@ -355,31 +438,46 @@ def main():
         font-size: 18px;
     }
     
-    /* Chat message styling */
+    /* Chat message styling - dark theme */
     .stChatMessage {
-        background-color: #f8f9fa;
+        background-color: var(--card-bg);
         border-radius: 15px;
         padding: 15px;
         margin: 10px 0;
+        color: var(--text-primary);
+        border: 1px solid #444;
     }
     
-    /* Input styling */
+    /* Chat input styling */
     .stChatInputContainer {
         border-top: 2px solid #667eea;
         padding-top: 20px;
+        background-color: var(--dark-bg);
     }
     
-    /* Metric cards */
+    /* Metric cards - dark theme */
     [data-testid="stMetricValue"] {
         font-size: 24px;
         font-weight: 600;
+        color: var(--text-primary);
     }
     
-    /* Expander styling */
+    [data-testid="stMetricLabel"] {
+        color: var(--text-secondary);
+    }
+    
+    /* Expander styling - dark theme */
     .streamlit-expanderHeader {
-        background-color: #f0f2f6;
+        background-color: var(--card-bg);
         border-radius: 8px;
         font-weight: 600;
+        color: var(--text-primary);
+        border: 1px solid #444;
+    }
+    
+    .streamlit-expanderContent {
+        background-color: var(--dark-bg);
+        color: var(--text-primary);
     }
     
     /* Button styling */
@@ -398,36 +496,137 @@ def main():
         box-shadow: 0 4px 12px rgba(102,126,234,0.4);
     }
     
-    /* Sidebar styling */
+    /* Sidebar styling - dark theme */
     [data-testid="stSidebar"] {
-        background-color: #f8f9fa;
+        background-color: #2a2a2a;
     }
     
-    /* Info boxes */
+    [data-testid="stSidebar"] .stMarkdown {
+        color: var(--text-primary);
+    }
+    
+    /* Dataframe styling - dark theme */
+    .stDataFrame {
+        background-color: var(--card-bg);
+        border: 1px solid #444;
+    }
+    
+    /* Code block styling - dark theme */
+    .stCode {
+        background-color: #1a1a1a;
+        border: 1px solid #444;
+    }
+    
+    /* Info boxes - dark theme */
     .info-box {
-        background-color: #e3f2fd;
+        background-color: #1a237e;
         padding: 15px;
         border-left: 4px solid #2196F3;
         border-radius: 5px;
         margin: 10px 0;
+        color: white;
     }
     
-    /* Success boxes */
     .success-box {
-        background-color: #e8f5e9;
+        background-color: #1b5e20;
         padding: 15px;
         border-left: 4px solid #4CAF50;
         border-radius: 5px;
         margin: 10px 0;
+        color: white;
     }
     
-    /* Warning boxes */
     .warning-box {
-        background-color: #fff3e0;
+        background-color: #e65100;
         padding: 15px;
         border-left: 4px solid #FF9800;
         border-radius: 5px;
         margin: 10px 0;
+        color: white;
+    }
+    
+    /* Text elements - dark theme */
+    .stMarkdown {
+        color: var(--text-primary);
+    }
+    
+    .stText {
+        color: var(--text-primary);
+    }
+    
+    /* Selectbox and input styling */
+    .stSelectbox > div > div {
+        background-color: var(--card-bg);
+        color: var(--text-primary);
+        border: 1px solid #444;
+    }
+    
+    .stTextInput > div > div > input {
+        background-color: var(--card-bg);
+        color: var(--text-primary);
+        border: 1px solid #444;
+    }
+    
+    /* Calendar widget styling */
+    .calendar-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        margin: 10px 0;
+    }
+    
+    .calendar-month {
+        color: rgba(255,255,255,0.9);
+        font-size: 16px;
+        margin: 5px 0;
+    }
+    
+    .calendar-dates {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 5px;
+        margin-top: 10px;
+    }
+    
+    .calendar-date {
+        padding: 8px;
+        border-radius: 5px;
+        color: rgba(255,255,255,0.8);
+        font-size: 12px;
+    }
+    
+    .calendar-date.today {
+        background-color: rgba(255,255,255,0.3);
+        color: white;
+        font-weight: bold;
+    }
+    
+    .calendar-date.other-month {
+        color: rgba(255,255,255,0.4);
+    }
+    
+    /* Author info styling */
+    .author-info {
+        background: linear-gradient(135deg, #4B0082 0%, #6A5ACD 100%);
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    
+    .author-info h4 {
+        color: white;
+        margin: 0 0 5px 0;
+        font-size: 16px;
+    }
+    
+    .author-info p {
+        color: rgba(255,255,255,0.8);
+        margin: 0;
+        font-size: 12px;
     }
     </style>
     """, unsafe_allow_html=True)

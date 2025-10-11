@@ -645,6 +645,21 @@ requests  # For future API integration
 6. **Supervisor**: Manager's decision (when escalated)
 7. **Performance Metrics**: Timing breakdown (expandable) (NEW)
 8. **Friendly Messages**: Pre and post-query engagement (NEW)
+9. **Weather Information**: Current conditions and shipping recommendations (NEW)
+
+### Dark Theme UI:
+- **Dark background** (#1e1e1e) with white text for better visibility
+- **Purple gradient theme** throughout interface
+- **2-Month calendar widget** with current date highlighted
+- **Gradient metric cards** for better visual appeal
+- **Professional author attribution** prominently displayed
+
+### Weather Integration:
+- **Real-time weather lookup** for destination ZIP codes
+- **Weather-based shipping recommendations** (temperature, storms, etc.)
+- **Package-specific warnings** (perishables, electronics)
+- **OpenWeatherMap API** integration (free tier)
+- **Expandable weather section** in chat messages
 
 ### Context Management:
 - Maintains conversation history
