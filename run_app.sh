@@ -37,4 +37,4 @@ echo "🌐 Starting Streamlit application..."
 echo ""
 
 # Launch the application
-uv run streamlit run fedex_app.py --server.port 8505 --server.address 0.0.0.0
+uv run streamlit run fedex_app.py --server.port 8507 --server.address 0.0.0.0
