@@ -54,10 +54,9 @@ class VannaConfig:
         else:
             return self.ollama_sql_model
     
-    # Qdrant configuration
-    qdrant_host: str = field(default_factory=lambda: os.getenv("QDRANT_HOST", "localhost"))
-    qdrant_port: int = field(default_factory=lambda: int(os.getenv("QDRANT_PORT", "6333")))
-    qdrant_collection: str = "fedex_rates_collection"
+    # ChromaDB configuration (in-memory by default, no external server needed)
+    chroma_persist_directory: str = field(default_factory=lambda: os.getenv("CHROMA_PERSIST_DIR", "./chroma_data"))
+    chroma_collection: str = "fedex_rates_collection"
     
     # Model persistence
     models_dir: Path = Path("models")
@@ -338,15 +337,14 @@ WEIGHT_RANGE = list(range(1, 151))  # 1-150 lbs
 def get_config() -> VannaConfig:
     """Get configuration instance with environment variable overrides."""
     config = VannaConfig()
-    
+
     # Override with environment variables if present
     config.db_path = Path(os.getenv("FEDEX_DB_PATH", config.db_path))
     config.model = os.getenv("OLLAMA_MODEL", config.model)
     config.ollama_host = os.getenv("OLLAMA_HOST", config.ollama_host)
-    config.qdrant_host = os.getenv("QDRANT_HOST", config.qdrant_host)
-    config.qdrant_port = int(os.getenv("QDRANT_PORT", config.qdrant_port))
-    config.qdrant_collection = os.getenv("QDRANT_COLLECTION", config.qdrant_collection)
+    config.chroma_persist_directory = os.getenv("CHROMA_PERSIST_DIR", config.chroma_persist_directory)
+    config.chroma_collection = os.getenv("CHROMA_COLLECTION", config.chroma_collection)
     config.log_level = os.getenv("LOG_LEVEL", config.log_level)
-    
+
     return config
 

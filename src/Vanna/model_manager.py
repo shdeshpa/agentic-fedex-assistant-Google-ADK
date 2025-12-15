@@ -11,7 +11,7 @@
 Model Manager for Vanna FedEx Rate Query System.
 
 Handles Vanna model initialization, training, persistence, and caching.
-Extracted from the original vanna_ollama_sqlite_fedex.py file.
+Uses ChromaDB for vector storage (in-memory, no external server needed).
 """
 
 import json
@@ -24,47 +24,44 @@ from loguru import logger
 
 from vanna.ollama import Ollama
 from vanna.openai import OpenAI_Chat
-from vanna.qdrant import Qdrant_VectorStore
+from vanna.chromadb import ChromaDB_VectorStore
 
 from src.Vanna.config import VannaConfig, TRAINING_EXAMPLES, DATABASE_DOCUMENTATION
 
 
-class VannaQdrantOllama(Qdrant_VectorStore, Ollama):
+class VannaChromaOllama(ChromaDB_VectorStore, Ollama):
     """
-    Custom Vanna class combining Qdrant vector store with Ollama LLM.
-    This provides both embedding storage and local LLM inference.
+    Custom Vanna class combining ChromaDB vector store with Ollama LLM.
+    ChromaDB runs in-memory - no external server needed.
     """
-    
+
     def __init__(self, config: VannaConfig):
-        """Initialize with Qdrant + Ollama."""
-        vanna_config = {
-            "client": None,  # Will be set later
-            "fastembed_model": "BAAI/bge-small-en-v1.5",
+        """Initialize with ChromaDB + Ollama."""
+        chroma_config = {
+            "path": config.chroma_persist_directory,
+        }
+        ChromaDB_VectorStore.__init__(self, config=chroma_config)
+
+        ollama_config = {
             "model": config.model,
             "ollama_host": config.ollama_host,
         }
-        Qdrant_VectorStore.__init__(self, config=vanna_config)
-        Ollama.__init__(self, config=vanna_config)
+        Ollama.__init__(self, config=ollama_config)
 
 
-class VannaQdrantOpenAI(Qdrant_VectorStore, OpenAI_Chat):
+class VannaChromaOpenAI(ChromaDB_VectorStore, OpenAI_Chat):
     """
-    Custom Vanna class combining Qdrant vector store with OpenAI LLM.
-    This provides both embedding storage and cloud LLM inference.
+    Custom Vanna class combining ChromaDB vector store with OpenAI LLM.
+    ChromaDB runs in-memory - no external server needed.
     """
-    
+
     def __init__(self, config: VannaConfig):
-        """Initialize with Qdrant + OpenAI."""
-        # Initialize Qdrant with configuration
-        qdrant_config = {
-            "qdrant_location": config.qdrant_host,
-            "qdrant_port": config.qdrant_port,
-            "qdrant_collection": config.qdrant_collection,
-            "fastembed_model": "BAAI/bge-small-en-v1.5",
+        """Initialize with ChromaDB + OpenAI."""
+        chroma_config = {
+            "path": config.chroma_persist_directory,
         }
-        Qdrant_VectorStore.__init__(self, config=qdrant_config)
-        
-        # Initialize OpenAI with configuration
+        ChromaDB_VectorStore.__init__(self, config=chroma_config)
+
         openai_config = {
             "model": config.model,
             "api_key": config.openai_api_key,
@@ -75,28 +72,28 @@ class VannaQdrantOpenAI(Qdrant_VectorStore, OpenAI_Chat):
 class VannaModelManager:
     """
     Manages Vanna model initialization, training, and persistence.
-    
+
     This class handles:
-    - Model initialization with Qdrant + Ollama
+    - Model initialization with ChromaDB + Ollama/OpenAI
     - Database schema training
     - Training example loading and persistence
     - Model caching to avoid retraining
     """
-    
+
     def __init__(self, config: VannaConfig):
         """
         Initialize the model manager.
-        
+
         Args:
             config: VannaConfig instance with all configuration settings
         """
         self.config = config
-        self.vanna = None  # Will be VannaQdrantOllama or VannaQdrantOpenAI
+        self.vanna = None  # Will be VannaChromaOllama or VannaChromaOpenAI
         self.db_conn: Optional[sqlite3.Connection] = None
-        
+
         logger.info(f"Initializing VannaModelManager with provider: {config.llm_provider}")
         logger.info(f"Model: {config.model}")
-        logger.info(f"Using Qdrant at {config.qdrant_host}:{config.qdrant_port}")
+        logger.info(f"Using ChromaDB at {config.chroma_persist_directory}")
     
     def connect_database(self) -> None:
         """Connect to SQLite database."""
@@ -108,34 +105,32 @@ class VannaModelManager:
             raise
     
     def initialize_vanna(self) -> None:
-        """Initialize Vanna with Qdrant + LLM backend (OpenAI or Ollama)."""
+        """Initialize Vanna with ChromaDB + LLM backend (OpenAI or Ollama)."""
         try:
-            logger.info(f"Connecting to Qdrant at {self.config.qdrant_host}:{self.config.qdrant_port}")
-            
+            logger.info(f"Initializing ChromaDB at {self.config.chroma_persist_directory}")
+
             # Initialize Vanna based on LLM provider
             if self.config.llm_provider == "openai":
                 logger.info(f"Connecting to OpenAI with model: {self.config.model}")
-                self.vanna = VannaQdrantOpenAI(self.config)
-                logger.success("✅ Vanna initialized with Qdrant + OpenAI backend")
+                self.vanna = VannaChromaOpenAI(self.config)
+                logger.success("✅ Vanna initialized with ChromaDB + OpenAI backend")
             else:  # ollama
                 logger.info(f"Connecting to Ollama at {self.config.ollama_host}")
-                self.vanna = VannaQdrantOllama(self.config)
-                logger.success("✅ Vanna initialized with Qdrant + Ollama backend")
-            
+                self.vanna = VannaChromaOllama(self.config)
+                logger.success("✅ Vanna initialized with ChromaDB + Ollama backend")
+
             # Connect Vanna to SQLite
             self.vanna.connect_to_sqlite(str(self.config.db_path))
-            
+
         except Exception as e:
             logger.error(f"❌ Failed to initialize Vanna: {e}")
             logger.info("\nTroubleshooting:")
             if self.config.llm_provider == "openai":
                 logger.info("1. Make sure OPENAI_API_KEY is set in .env file")
-                logger.info("2. Make sure Qdrant is running on port 6333")
-                logger.info(f"3. Verify API key is valid")
+                logger.info("2. Verify API key is valid")
             else:
                 logger.info("1. Make sure Ollama is running: ollama serve")
-                logger.info("2. Make sure Qdrant is running on port 6333")
-                logger.info(f"3. Check model is available: ollama list")
+                logger.info("2. Check model is available: ollama list")
             raise
     
     def is_model_trained(self) -> bool:
@@ -253,7 +248,7 @@ class VannaModelManager:
         except Exception as e:
             logger.warning(f"⚠ Failed to save training data: {e}")
     
-    def get_vanna_instance(self) -> VannaQdrantOllama:
+    def get_vanna_instance(self) -> VannaChromaOllama:
         """
         Get the initialized Vanna instance.
         
