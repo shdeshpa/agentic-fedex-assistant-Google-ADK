@@ -42,3 +42,6 @@ Thumbs.db
 *.tmp
 *.bak
 *.cache
+
+# Personal files (not for repo)
+LINKEDIN_ARTICLE.md
