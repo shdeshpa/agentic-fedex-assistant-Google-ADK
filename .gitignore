@@ -26,6 +26,8 @@ env/
 
 # Logs
 *.log
+logs/
+*.jsonl
 
 # Database (optional - uncomment if you don't want to commit DB)
 # fedex_rates.db

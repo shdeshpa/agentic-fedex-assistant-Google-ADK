@@ -1,201 +1,188 @@
-# FedEx AI Shipping Assistant
+# Agentic AI FedEx Shipping Assistant
 
-> **From 500+ Pages of PDF Rate Tables to Natural Language Queries in Under 2 Seconds**
+> **Multi-Agent System with Full Reasoning Transparency**
 
-A production-ready AI system that transforms complex FedEx shipping rate lookups into simple conversational queries. This project demonstrates end-to-end AI product development: from messy PDF extraction to a deployed natural language interface.
-
----
-
-## The Problem: Why This Matters
-
-**Enterprise shipping teams waste 15-20 minutes per rate lookup** navigating 500+ page PDF rate guides. With thousands of rate combinations (7 zones x 150 weights x 6 services = 6,300 data points), finding the optimal shipping option is tedious and error-prone.
-
-### Business Impact
-- **Manual Lookup Time**: 15-20 minutes per query
-- **Error Rate**: ~12% misquotes due to human error
-- **Cost of Errors**: Incorrect quotes lead to margin erosion or lost customers
-
-### The Solution
-An AI assistant that answers questions like:
-- *"What's the cheapest way to ship 25 lbs to New York?"*
-- *"Compare overnight options for Zone 5"*
-- *"Find rates under $50 for 10 lb packages"*
-
-**Result: Query time reduced from 15 minutes to 2 seconds (99.7% improvement)**
+A production-ready **Agentic AI** system that transforms shipping rate lookups into intelligent, transparent conversations. This project demonstrates modern multi-agent architecture with explicit reasoning trajectories, reflection patterns, and tool-based decision making.
 
 ---
 
-## Key Metrics & Outcomes
+## Why Agentic AI?
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| **Query Time** | 15-20 min | 1.8 sec | **99.7%** |
-| **Data Accuracy** | Manual entry errors | 100% validated | **Eliminated errors** |
-| **Data Coverage** | Partial lookups | 1,050 rate records | **Complete coverage** |
-| **User Experience** | PDF navigation | Natural language | **Conversational AI** |
-| **Text-to-SQL Accuracy** | N/A | 38 trained examples | **Production-ready** |
+Traditional chatbots are **black boxes** - you ask a question, you get an answer, but you have no idea *why*. This creates trust issues in enterprise applications where decisions have financial impact.
 
----
+### The Agentic Difference
 
-## Technical Architecture
+| Traditional AI | Agentic AI (This Project) |
+|---------------|---------------------------|
+| Single monolithic LLM call | Multi-agent orchestration |
+| Hidden reasoning | Transparent trajectory logging |
+| No self-assessment | Reflection pattern with confidence scores |
+| Hardcoded logic | Dynamic tool selection |
+| Override user intent | **Respect user intent** (critical!) |
 
-```
-                                    USER QUERY
-                                        |
-                                        v
-                    +-------------------+-------------------+
-                    |           NiceGUI Web Interface       |
-                    |        (Modern, Responsive UI)        |
-                    +-------------------+-------------------+
-                                        |
-                    +-------------------v-------------------+
-                    |          Unified Agent Layer          |
-                    |   - Request Parsing (LLM-powered)     |
-                    |   - Zone Lookup (with typo correction)|
-                    |   - Budget & Urgency Handling         |
-                    +-------------------+-------------------+
-                                        |
-                    +-------------------v-------------------+
-                    |        Vanna.AI Text-to-SQL           |
-                    |   - ChromaDB Vector Store             |
-                    |   - 38 Trained Query Examples         |
-                    |   - Schema-Aware SQL Generation       |
-                    +-------------------+-------------------+
-                                        |
-                    +-------------------v-------------------+
-                    |          SQLite Database              |
-                    |   - 1,050 Rate Records                |
-                    |   - 7 Zones x 150 Weights             |
-                    |   - 6 FedEx Service Types             |
-                    +---------------------------------------+
-```
+**Key Principle**: If a user asks for "overnight" shipping, we recommend overnight - not the cheapest option. **User intent takes priority over cost optimization.**
 
 ---
 
-## The Hard Problem: PDF Data Extraction
+## Multi-Agent Architecture
 
-### Challenge
-FedEx publishes shipping rates in a 500+ page PDF with complex multi-line table cells, inconsistent formatting, and zone-specific tables spread across 21 pages.
-
-### Solution: Custom Extraction Pipeline
-
-```python
-# The extraction challenge: Multi-line cells with aligned data
-# PDF Cell Content:
-#   "1 lb\n2 lbs\n3 lbs"  |  "$23.50\n$25.75\n$28.00"
-#
-# Must correctly pair: 1 lb -> $23.50, 2 lbs -> $25.75, etc.
 ```
-
-**Key Technical Decisions:**
-
-1. **Library Selection**: Chose `pdfplumber` over alternatives
-   - PyPDF2: Poor table extraction
-   - Tabula: Missed multi-line cells
-   - pdfplumber: Accurate cell boundary detection
-
-2. **Multi-line Cell Parsing**: Custom algorithm to align values across columns when cells contain multiple data points
-
-3. **Validation Pipeline**: Automated verification against manually verified reference data
-
-### Extraction Results
-- **Pages Processed**: 21 (pages 13-33)
-- **Records Extracted**: 1,050
-- **Accuracy**: 100% (validated against reference set)
-- **Processing Time**: ~3 seconds
+                              ┌─────────────────────────────┐
+                              │         USER QUERY          │
+                              │ "Ship chocolates overnight  │
+                              │   from SFO to Denver"       │
+                              └─────────────┬───────────────┘
+                                            │
+                    ┌───────────────────────▼───────────────────────┐
+                    │            🛡️ SUPERVISOR AGENT                │
+                    │                                                │
+                    │  • Prompt injection detection                  │
+                    │  • Request validation                          │
+                    │  • Security guardrails                         │
+                    │  • Routes to appropriate agent                 │
+                    │                                                │
+                    │  Reflection: "Valid shipping query, 90%        │
+                    │               confidence, routing to customer" │
+                    └───────────────────────┬───────────────────────┘
+                                            │
+                    ┌───────────────────────▼───────────────────────┐
+                    │        💬 CUSTOMER INTERACTION AGENT          │
+                    │                                                │
+                    │  • Parse natural language query                │
+                    │  • Extract: origin, destination, weight        │
+                    │  • Detect urgency: "overnight" → overnight     │
+                    │  • Recognize: SFO → San Francisco, CA          │
+                    │                                                │
+                    │  Reflection: "Understood request - overnight   │
+                    │               delivery, 85% confidence"        │
+                    └───────────────────────┬───────────────────────┘
+                                            │
+                    ┌───────────────────────▼───────────────────────┐
+                    │         📦 SHIPPING EXPERT AGENT              │
+                    │                                                │
+                    │  Tools Available:                              │
+                    │  ┌────────────────────────────────────────┐   │
+                    │  │ 🗺️ Zone Calculator                      │   │
+                    │  │   SFO → San Francisco → Zone 3         │   │
+                    │  └────────────────────────────────────────┘   │
+                    │  ┌────────────────────────────────────────┐   │
+                    │  │ ⚖️ Weight Estimator                     │   │
+                    │  │   "chocolates" → 2.0 lbs (high conf)   │   │
+                    │  └────────────────────────────────────────┘   │
+                    │  ┌────────────────────────────────────────┐   │
+                    │  │ 💾 Rate Database (Vanna SQL)           │   │
+                    │  │   Zone 3, 2 lbs → Real FedEx rates     │   │
+                    │  └────────────────────────────────────────┘   │
+                    │                                                │
+                    │  Reflection: "User asked for overnight,        │
+                    │               recommending Standard Overnight  │
+                    │               at $44.68 - respecting intent"   │
+                    └───────────────────────┬───────────────────────┘
+                                            │
+                              ┌─────────────▼───────────────┐
+                              │      RESPONSE + TRAJECTORY  │
+                              │  • Recommendation with why  │
+                              │  • Full reasoning log       │
+                              │  • Agent reflections        │
+                              │  • All alternatives shown   │
+                              └─────────────────────────────┘
+```
 
 ---
 
-## Text-to-SQL: Teaching AI to Query Data
+## Key Features
 
-### The Vanna.AI Approach
+### 1. Transparent Reasoning Trajectory
 
-Rather than building a custom NLP-to-SQL system, I leveraged [Vanna.AI](https://vanna.ai/) - an open-source framework that uses RAG (Retrieval-Augmented Generation) for text-to-SQL conversion.
+Every query produces a visible decision trail:
 
-### How It Works
+```
+[Supervisor] >>> Agent Supervisor started
+[Supervisor] [REFLECT] Valid shipping query, 90% confidence
+[Supervisor] [TRANSFER] -> Customer Interaction: Valid shipping query
 
-1. **Schema Training**: Feed database structure to the model
-2. **Example Training**: Provide question-SQL pairs
-3. **Query Time**: Similar examples are retrieved, guiding SQL generation
+[Customer]   >>> Agent Customer Interaction started
+[Customer]   [REFLECT] Extracted: origin=SFO, dest=Denver, urgency=overnight
+[Customer]   [TRANSFER] -> Shipping Expert: Request parsed
 
-### Training Examples (38 total)
-
-```python
-# Zone-based queries
-{"question": "What are all the rates for Zone 2?",
- "sql": "SELECT * FROM fedex_rates WHERE Zone = 2"}
-
-# Cheapest rate queries
-{"question": "What's the cheapest service for Zone 6, 15 lbs?",
- "sql": "SELECT MIN(FedEx_Express_Saver) FROM fedex_rates WHERE Zone = 6 AND Weight = 15"}
-
-# Comparison queries
-{"question": "Compare overnight services for Zone 3",
- "sql": "SELECT Zone, Weight, FedEx_First_Overnight, FedEx_Priority_Overnight, FedEx_Standard_Overnight FROM fedex_rates WHERE Zone = 3"}
+[Expert]     >>> Agent Shipping Expert started
+[Expert]     [TOOL] Calling zone_calculator: {origin: "SFO", dest: "Denver"}
+[Expert]     [TOOL] zone_calculator returned: Zone 3
+[Expert]     [TOOL] Calling weight_estimator: {item: "chocolates"}
+[Expert]     [TOOL] weight_estimator returned: 2.0 lbs
+[Expert]     [REFLECT] Recommending overnight per user intent, 90% confidence
 ```
 
-### Vector Store Selection
+### 2. Reflection Pattern
 
-| Option | Pros | Cons | Decision |
-|--------|------|------|----------|
-| **Qdrant** | Powerful, scalable | Requires Docker | Initially used |
-| **ChromaDB** | In-memory, simple | Less scalable | **Final choice** |
-| **Pinecone** | Managed service | Cost, latency | Not needed |
-
-**Rationale**: For 38 training examples, ChromaDB's simplicity outweighed Qdrant's power. No external dependencies = easier deployment.
-
----
-
-## Intelligent Features
-
-### 1. LLM-Powered Location Understanding
-
-The system uses LLM calls to handle real-world input variations:
+Each agent provides self-assessment:
 
 ```python
-# Typo Correction
-"Los Angels, CAL" -> "Los Angeles, CA" -> Zone 2
-
-# City-to-Zone Mapping
-"Ship to Boston" -> Recognizes Boston = Zone 7
+{
+    "agent": "Shipping Expert",
+    "understanding": "Ship 2 lbs overnight from SF to Denver",
+    "actions_taken": [
+        "Calculated zone: 3",
+        "Estimated weight: 2.0 lbs",
+        "Found overnight options",
+        "Selected best overnight per user intent"
+    ],
+    "confidence_percent": 90,
+    "concerns": []
+}
 ```
 
-### 2. Smart Query Enhancement
+### 3. Intent-Aware Recommendations
+
+**Critical Design Decision**: User intent > cost optimization
+
+| User Says | System Recommends | NOT |
+|-----------|-------------------|-----|
+| "overnight" | FedEx Standard Overnight $44.68 | ~~Cheapest at $24.83~~ |
+| "cheapest" | FedEx Express Saver $24.83 | N/A |
+| "2-day" | FedEx 2Day $26.68 | ~~Overnight~~ |
+| No preference | Cheapest option | N/A |
+
+### 4. Intelligent Location Resolution
 
 ```python
-# User asks: "cheapest rate for Boston"
-# System enhances: "cheapest rate for Zone 7" (Boston's zone)
-# Then generates appropriate SQL
+# Airport Codes
+"SFO" → "San Francisco, CA"
+"JFK" → "New York, NY"
+"ORD" → "Chicago, IL"
+
+# City Nicknames
+"Big Apple" → "New York, NY"
+"Windy City" → "Chicago, IL"
+
+# Typo Correction (LLM-powered)
+"San Fransisco" → "San Francisco"
+"Los Angels" → "Los Angeles"
 ```
 
-### 3. Budget-Aware Recommendations
+### 5. Weight Estimation
 
 ```python
-# "Ship 10 lbs to NYC, budget $60"
-# System filters: Only shows services under $60
-# Recommends: FedEx Express Saver at $56.99
-```
-
-### 4. Prohibited Item Detection
-
-```python
-# Blocks dangerous queries like:
-# "Ship my pet cat to Florida" -> Rejected with explanation
-# "Send fresh mangoes overnight" -> Warning about perishables
+# Common items database + LLM fallback
+"wine bottle" → 3.0 lbs (high confidence)
+"65 inch TV" → 55.0 lbs (high confidence)
+"chocolates" → 2.0 lbs (high confidence)
+"vintage vase" → 8.0 lbs (medium confidence, LLM estimate)
 ```
 
 ---
 
 ## Technology Stack
 
-| Layer | Technology | Why This Choice |
-|-------|------------|-----------------|
-| **Frontend** | NiceGUI | Python-native, reactive, modern UI |
-| **LLM** | Ollama (local) / OpenAI | Flexibility: free local or fast cloud |
-| **Text-to-SQL** | Vanna.AI | Purpose-built for SQL generation |
-| **Vector Store** | ChromaDB | Simple, in-memory, no dependencies |
-| **Database** | SQLite | Lightweight, portable, fast |
-| **PDF Extraction** | pdfplumber | Best accuracy for complex tables |
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Agent Framework** | Custom (Google ADK patterns) | Multi-agent orchestration |
+| **Tools** | FastMCP | Zone calculator, weight estimator |
+| **LLM** | OpenAI GPT-4o-mini | Reasoning, parsing, correction |
+| **Text-to-SQL** | Vanna.AI + ChromaDB | Database queries |
+| **Database** | SQLite | 1,050 FedEx rate records |
+| **Frontend** | NiceGUI | Modern Python web UI |
+| **Logging** | Loguru + JSON | Trajectory persistence |
 
 ---
 
@@ -203,28 +190,33 @@ The system uses LLM calls to handle real-world input variations:
 
 ```
 fedex-shipping-assistant/
-├── fedex_app_nicegui.py      # Main application (NiceGUI web UI)
-├── fedex_rates.db            # SQLite database (1,050 records)
-├── fedex_training.json       # Vanna training examples (38 pairs)
-├── .env                      # Configuration (LLM provider, keys)
+├── fedex_app_agentic.py          # Multi-agent UI (port 8083)
+├── fedex_app_nicegui.py          # Legacy UI (port 8082)
+├── fedex_rates.db                # SQLite database
 │
 ├── src/
 │   ├── agents/
-│   │   ├── unified_agent.py      # Main orchestration logic
-│   │   ├── zone_lookup_tool.py   # LLM-powered location handling
-│   │   └── weather_tool.py       # Weather integration
+│   │   ├── adk_agents.py         # Multi-agent system
+│   │   │   ├── SupervisorAgent   # Security & routing
+│   │   │   ├── CustomerAgent     # Query understanding
+│   │   │   └── ExpertAgent       # Tool execution
+│   │   ├── session_manager.py    # State management
+│   │   └── unified_agent.py      # Legacy agent
 │   │
-│   ├── Vanna/
-│   │   ├── model_manager.py      # ChromaDB + LLM setup
-│   │   ├── text_to_sql.py        # Query generation
-│   │   ├── sql_engine.py         # Database execution
-│   │   └── config.py             # Training examples
+│   ├── tools/
+│   │   ├── zone_calculator.py    # Location → Zone
+│   │   ├── weight_estimator.py   # Item → Weight
+│   │   └── mcp_server.py         # FastMCP tools
 │   │
-│   ├── extract_fedex_rates.py    # PDF extraction pipeline
-│   └── load_to_sqlite.py         # Database loader
+│   ├── logging/
+│   │   └── trajectory_logger.py  # Reasoning logs
+│   │
+│   └── Vanna/
+│       ├── model_manager.py      # Text-to-SQL setup
+│       └── config.py             # Training examples
 │
-└── data/
-    └── Service_Guide_2025.pdf    # Source FedEx rate guide
+└── logs/                         # JSON trajectory files
+    └── trajectory_YYYYMMDD.jsonl
 ```
 
 ---
@@ -233,87 +225,131 @@ fedex-shipping-assistant/
 
 ### Prerequisites
 - Python 3.12+
-- Ollama (for local LLM) or OpenAI API key
+- OpenAI API key
 
 ### Installation
 
 ```bash
 # Clone repository
-git clone https://github.com/shdeshpa/Fedex_shipping_assistant.git
-cd Fedex_shipping_assistant
+git clone https://github.com/YOUR_USERNAME/agentic-fedex-assistant.git
+cd agentic-fedex-assistant
 
 # Install dependencies
 uv sync
 
 # Configure environment
-cp .env.example .env
-# Edit .env with your preferences (Ollama or OpenAI)
+echo "LLM_PROVIDER=openai" > .env
+echo "OPENAI_API_KEY=your-key-here" >> .env
+echo "OPENAI_MODEL=gpt-4o-mini" >> .env
 
-# Run the application
-python fedex_app_nicegui.py
+# Run the agentic application
+python fedex_app_agentic.py
 ```
 
 ### Access
-Open http://localhost:8082 in your browser.
-
-### Example Queries
-- "What's the cheapest rate for 10 lbs to Zone 5?"
-- "Compare all overnight services for Zone 3"
-- "Show rates under $100 for 50 lb packages"
-- "Ship 25 lbs from California to New York"
+Open http://localhost:8083 in your browser.
 
 ---
 
-## Lessons Learned
+## Example Queries
 
-### 1. PDF Extraction is Harder Than Expected
-- Multi-line cells require custom parsing logic
-- Always build validation against known-good data
-- pdfplumber > PyPDF2 > Tabula for complex tables
+### Intent-Specific
+- **"Ship chocolates overnight from SFO to Denver"**
+  - Detects: overnight intent, SFO → San Francisco
+  - Recommends: FedEx Standard Overnight (respects intent)
 
-### 2. Text-to-SQL Benefits from Examples
-- 38 well-chosen examples > 1000 random ones
-- Cover edge cases: MIN/MAX, GROUP BY, comparisons
-- Include the "why" in documentation (cost hierarchy)
+- **"Cheapest way to send 10 lbs to New York"**
+  - Detects: cheapest intent
+  - Recommends: FedEx Express Saver (lowest cost)
 
-### 3. Simpler Infrastructure Wins
-- Started with Qdrant (Docker) -> Switched to ChromaDB (in-memory)
-- For small datasets, simplicity beats scalability
-- Fewer moving parts = faster development
+### With Budget
+- **"Send wine bottles to Boston, budget $50"**
+  - Estimates: wine bottles ≈ 3 lbs
+  - Filters: Only options under $50
+  - Warns: If intent (overnight) exceeds budget
 
-### 4. LLMs Excel at Fuzzy Matching
-- Typo correction ("Los Angels" -> "Los Angeles")
-- Intent extraction ("cheapest" -> MIN(Express_Saver))
-- Location understanding ("Boston" -> Zone 7)
+### Complex
+- **"Ship a 65 inch TV from Big Apple to LA"**
+  - Resolves: Big Apple → New York, NY
+  - Estimates: 65" TV → 55 lbs
+  - Returns: All options sorted by price
+
+---
+
+## Agentic AI Patterns Implemented
+
+### 1. Multi-Agent Orchestration
+Three specialized agents with clear responsibilities, communicating via state transfer.
+
+### 2. Tool Use
+Agents dynamically invoke tools (zone calculator, weight estimator, database) based on task needs.
+
+### 3. Reflection
+Every agent outputs a self-assessment with confidence scores and concerns.
+
+### 4. Trajectory Logging
+Complete decision trail saved to console and JSON files for debugging and audit.
+
+### 5. Intent Preservation
+User preferences are detected and respected, not overridden by optimization logic.
+
+### 6. Graceful Degradation
+If Vanna fails, direct SQL fallback. If that fails, clear error message (no hallucinated rates).
+
+---
+
+## Comparison: Before vs After
+
+| Aspect | Before (Unified Agent) | After (Agentic) |
+|--------|----------------------|-----------------|
+| Architecture | Single agent | 3 specialized agents |
+| Reasoning | Hidden | Transparent trajectory |
+| User Intent | Often overridden | **Always respected** |
+| Tool Use | Hardcoded flow | Dynamic selection |
+| Errors | Silent failures | Explicit logging |
+| Debugging | Difficult | Full trajectory JSON |
+| Confidence | None shown | Per-agent reflection |
+
+---
+
+## Metrics
+
+| Metric | Value |
+|--------|-------|
+| **Response Time** | 3-5 seconds |
+| **Agent Handoffs** | 3 (Supervisor → Customer → Expert) |
+| **Tools Available** | 3 (zone, weight, database) |
+| **Training Examples** | 38 (Vanna text-to-SQL) |
+| **Rate Records** | 1,050 |
+| **Reflection Coverage** | 100% of agents |
 
 ---
 
 ## Future Enhancements
 
-- [ ] **Multi-carrier Support**: Add UPS, USPS rates
-- [ ] **Real-time Rate API**: Integrate with FedEx API for live rates
-- [ ] **Shipment Tracking**: Add tracking number lookup
-- [ ] **Cost Optimization**: Suggest package consolidation
-- [ ] **Historical Analytics**: Track shipping spend over time
+- [ ] **Memory**: Cross-session conversation history
+- [ ] **Learning**: Improve from user corrections
+- [ ] **Multi-carrier**: Add UPS, USPS agents
+- [ ] **Voice**: Speech-to-text input
+- [ ] **API**: REST endpoints for integration
 
 ---
 
 ## About This Project
 
-This project demonstrates end-to-end AI product development skills:
+This project demonstrates **Agentic AI** development skills:
 
-- **Problem Identification**: Recognized inefficiency in manual rate lookups
-- **Data Engineering**: Built robust PDF extraction pipeline
-- **AI/ML Integration**: Implemented text-to-SQL with Vanna.AI
-- **UX Design**: Created intuitive natural language interface
-- **Infrastructure Decisions**: Made pragmatic technology choices
+- **Multi-Agent Design**: Specialized agents with clear boundaries
+- **Transparent AI**: Visible reasoning for trust and debugging
+- **User-Centric**: Intent detection and preservation
+- **Production Patterns**: Reflection, trajectory logging, graceful degradation
 
-### Connect
+### Author
 
-**Author**: Shrinivas Deshpande
+**Shrinivas Deshpande**
 
 - GitHub: [@shdeshpa](https://github.com/shdeshpa)
-- LinkedIn: [Connect with me](https://linkedin.com/in/shrinivas-deshpande)
+- LinkedIn: [Connect](https://linkedin.com/in/shrinivas-deshpande)
 
 ---
 
@@ -324,4 +360,5 @@ MIT License - See [LICENSE](LICENSE) for details.
 ---
 
 ### Keywords
-`AI` `Natural Language Processing` `Text-to-SQL` `Vanna.AI` `ChromaDB` `PDF Extraction` `Shipping Automation` `LLM Applications` `Python` `Enterprise AI` `Product Management` `Data Engineering` `SQLite` `NiceGUI` `Ollama` `OpenAI`
+
+`Agentic AI` `Multi-Agent Systems` `LLM Orchestration` `Transparent AI` `Reflection Pattern` `Tool Use` `Intent Detection` `FastMCP` `Vanna.AI` `Text-to-SQL` `Python` `NiceGUI` `OpenAI` `Enterprise AI` `Shipping Automation`
