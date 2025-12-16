@@ -43,5 +43,9 @@ Thumbs.db
 *.bak
 *.cache
 
+#Data files
+data/service_guide_2025.pdf
+
+
 # Personal files (not for repo)
 LINKEDIN_ARTICLE.md

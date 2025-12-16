@@ -106,13 +106,19 @@ class FedExZoneLookupTool:
             zone, explanation = self._lookup_by_city_state(city, state)
             if zone:
                 return zone, explanation
-        
-        # Method 3: State-only lookup (general zone)
+
+        # Method 3: City-only lookup (will infer state)
+        if city and not state:
+            zone, explanation = self._lookup_by_city_state(city, None)
+            if zone:
+                return zone, explanation
+
+        # Method 4: State-only lookup (general zone)
         if state:
             zone, explanation = self._lookup_by_state(state)
             if zone:
                 return zone, explanation
-        
+
         return None, "Unable to determine zone. Please provide city/state or ZIP code."
     
     def _lookup_by_zipcode(
@@ -147,42 +153,86 @@ class FedExZoneLookupTool:
             return None, f"Invalid ZIP code: {zipcode}"
     
     def _lookup_by_city_state(
-        self, 
-        city: str, 
+        self,
+        city: str,
         state: str
     ) -> Tuple[Optional[int], str]:
         """
         Look up zone by city and state with LLM-based typo correction.
-        
+
         Args:
             city: City name (may have typos)
-            state: State name or abbreviation (may have typos)
-            
+            state: State name or abbreviation (may have typos, can be None)
+
         Returns:
             Tuple of (zone, explanation)
         """
+        # Handle case where state is None or empty - try city-only lookup first
+        if not state or state.lower() in ['none', 'unknown', '']:
+            # Try to find city in database without state
+            city_lower = city.lower().strip()
+            for key, zone in self.zone_database.items():
+                db_city = key.split(',')[0].strip()
+                if city_lower == db_city:
+                    state_from_db = key.split(',')[1].strip().upper() if ',' in key else ''
+                    return zone, f"{city.title()}, {state_from_db} is in Zone {zone}"
+
+            # Try partial match
+            for key, zone in self.zone_database.items():
+                db_city = key.split(',')[0].strip()
+                if city_lower in db_city or db_city in city_lower:
+                    state_from_db = key.split(',')[1].strip().upper() if ',' in key else ''
+                    return zone, f"{city.title()}, {state_from_db} is in Zone {zone} (approximate match)"
+
+            # Use LLM to infer state
+            state = self._infer_state_from_city(city)
+
         # Step 1: Normalize state with LLM
         normalized_state = self._normalize_state_with_llm(state)
-        
+
         # Step 2: Normalize city with LLM
         normalized_city = self._normalize_city_with_llm(city, normalized_state)
-        
+
         # Step 3: Lookup in database
         lookup_key = f"{normalized_city.lower()}, {normalized_state.lower()}"
-        
+
         if lookup_key in self.zone_database:
             zone = self.zone_database[lookup_key]
             correction_msg = ""
-            if city.lower() != normalized_city.lower() or state.lower() != normalized_state.lower():
+            if city.lower() != normalized_city.lower() or (state and state.lower() != normalized_state.lower()):
                 correction_msg = f" (corrected from '{city}, {state}')"
             return zone, f"{normalized_city}, {normalized_state} is in Zone {zone}{correction_msg}"
-        
+
         # Fallback: Try just city name
         for key, zone in self.zone_database.items():
             if normalized_city.lower() in key:
                 return zone, f"{normalized_city} is in Zone {zone} (approximate match)"
-        
+
         return None, f"City '{normalized_city}, {normalized_state}' not found in database"
+
+    def _infer_state_from_city(self, city: str) -> str:
+        """Use LLM to infer state from city name."""
+        prompt = f"""What US state is the city "{city}" in? Return ONLY the 2-letter state abbreviation.
+
+Examples:
+- Denver -> CO
+- Boston -> MA
+- Seattle -> WA
+- Phoenix -> AZ
+- Miami -> FL
+
+Return only the 2-letter code, nothing else."""
+
+        try:
+            response = self.llm.invoke([HumanMessage(content=prompt)])
+            state = response.content.strip().upper()[:2]
+            if state in self.state_abbreviations.values():
+                logger.info(f"✅ Inferred state for {city}: {state}")
+                return state
+        except Exception as e:
+            logger.warning(f"⚠️ Could not infer state for {city}: {e}")
+
+        return "CA"  # Default fallback
     
     def _lookup_by_state(self, state: str) -> Tuple[Optional[int], str]:
         """

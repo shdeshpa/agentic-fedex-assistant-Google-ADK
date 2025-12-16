@@ -266,14 +266,17 @@ class UnifiedFedExAgent:
 User Request: "{user_question}"
 
 Extract these parameters:
-- origin: Origin city and state (if not mentioned, use "Current location")
+- origin: Origin city and state (IMPORTANT: if not mentioned, use "San Francisco, CA")
 - destination: Destination city and state (required)
 - weight: Package weight in pounds (if not mentioned, assume 10.0)
 - budget: Maximum budget in USD (ONLY if explicitly mentioned, otherwise "None")
 - urgency: "overnight", "2-day", "standard", or "economy" (if not mentioned, use "standard")
 
-IMPORTANT: Only set budget if user explicitly mentions a dollar amount. 
-If they say "cheapest" or "best rate", set budget to "None".
+IMPORTANT RULES:
+1. Recognize airport codes: SFO = "San Francisco, CA", LAX = "Los Angeles, CA", JFK/NYC = "New York, NY", DEN = "Denver, CO", ORD = "Chicago, IL", BOS = "Boston, MA", SEA = "Seattle, WA", PHX = "Phoenix, AZ", ATL = "Atlanta, GA", DFW = "Dallas, TX", MIA = "Miami, FL"
+2. Always include state abbreviation with city (e.g., "Denver, CO" not just "Denver")
+3. Only set budget if user explicitly mentions a dollar amount ($60, 60 dollars, etc.)
+4. If they say "cheapest" or "best rate" without a number, set budget to "None"
 
 Return ONLY valid JSON with exactly these keys, no additional text:
 {{"origin": "...", "destination": "...", "weight": 10.0, "budget": "None", "urgency": "standard"}}
